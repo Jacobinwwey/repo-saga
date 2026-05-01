@@ -73,12 +73,19 @@ export async function resolveSource(
     const slug = createHash('sha1').update(input).digest('hex').slice(0, 16);
     const targetDir = path.join(cacheRoot, slug);
     const exists = await pathIsDir(targetDir);
+    let shouldClone = !exists || Boolean(opts.force);
 
     if (exists && opts.force) {
       await fs.rm(targetDir, { recursive: true, force: true });
     }
 
-    if (!exists || opts.force) {
+    if (exists && !opts.force && !(await isGitWorkTree(gitBin, targetDir))) {
+      opts.onProgress?.(`Discarding invalid cached clone at ${targetDir}`);
+      await fs.rm(targetDir, { recursive: true, force: true });
+      shouldClone = true;
+    }
+
+    if (shouldClone) {
       opts.onProgress?.(`Cloning ${input} into cache…`);
       const args = ['clone', '--quiet'];
       if (opts.shallow) args.push('--depth', '1000');
@@ -90,7 +97,8 @@ export async function resolveSource(
         throw new Error(`git clone failed: ${msg}`);
       }
     } else {
-      opts.onProgress?.(`Using cached clone at ${targetDir}`);
+      opts.onProgress?.(`Refreshing cached clone at ${targetDir}`);
+      await refreshCachedClone(gitBin, targetDir);
     }
 
     return { resolvedPath: targetDir, source: input, isClone: true };
@@ -126,6 +134,29 @@ export async function readGitLog(
   });
 
   return parseGitLog(stdout);
+}
+
+async function isGitWorkTree(gitBin: string, repoPath: string): Promise<boolean> {
+  try {
+    const { stdout } = await execa(gitBin, ['-C', repoPath, 'rev-parse', '--is-inside-work-tree']);
+    return stdout.trim() === 'true';
+  } catch {
+    return false;
+  }
+}
+
+async function refreshCachedClone(gitBin: string, repoPath: string): Promise<void> {
+  try {
+    await execa(gitBin, ['-C', repoPath, 'fetch', '--quiet', '--tags', '--prune'], {
+      timeout: 10 * 60_000,
+    });
+    await execa(gitBin, ['-C', repoPath, 'pull', '--ff-only', '--quiet'], {
+      timeout: 10 * 60_000,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`git cache refresh failed: ${msg}`);
+  }
 }
 
 export function parseGitLog(stdout: string): RawCommit[] {

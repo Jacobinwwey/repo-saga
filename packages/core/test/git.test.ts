@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
+import { chmod, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import * as os from 'node:os';
+import * as path from 'node:path';
 import {
   deriveRepoName,
   isRemoteUrl,
   parseGitLog,
   parseNumstatLine,
+  resolveSource,
 } from '../src/git.js';
 
 describe('isRemoteUrl', () => {
@@ -103,3 +108,89 @@ describe('parseGitLog', () => {
     expect(commits[1].files.find((f) => f.path === 'tsconfig.json')).toBeDefined();
   });
 });
+
+describe('resolveSource remote cache', () => {
+  it('refreshes a valid cached remote clone', async () => {
+    const source = 'https://example.com/owner/repo.git';
+    const tmp = await mkdtemp(path.join(os.tmpdir(), 'repo-saga-git-'));
+    const cacheDir = path.join(tmp, 'cache');
+    const targetDir = path.join(cacheDir, cacheSlug(source));
+    await mkdir(targetDir, { recursive: true });
+    const logPath = path.join(tmp, 'git.log');
+    const gitBin = await writeFakeGit(tmp);
+
+    const prevLog = process.env.REPO_SAGA_GIT_LOG;
+    const prevValid = process.env.REPO_SAGA_GIT_VALID;
+    process.env.REPO_SAGA_GIT_LOG = logPath;
+    process.env.REPO_SAGA_GIT_VALID = 'true';
+    try {
+      const resolved = await resolveSource(source, { cacheDir, gitBin });
+      expect(resolved.resolvedPath).toBe(targetDir);
+      const log = await readFile(logPath, 'utf8');
+      expect(log).toContain('-C\t' + targetDir + '\trev-parse\t--is-inside-work-tree');
+      expect(log).toContain('-C\t' + targetDir + '\tfetch\t--quiet\t--tags\t--prune');
+      expect(log).toContain('-C\t' + targetDir + '\tpull\t--ff-only\t--quiet');
+      expect(log).not.toContain('clone\t--quiet');
+    } finally {
+      restoreEnv('REPO_SAGA_GIT_LOG', prevLog);
+      restoreEnv('REPO_SAGA_GIT_VALID', prevValid);
+    }
+  });
+
+  it('reclones an invalid cached remote directory', async () => {
+    const source = 'https://example.com/owner/broken.git';
+    const tmp = await mkdtemp(path.join(os.tmpdir(), 'repo-saga-git-'));
+    const cacheDir = path.join(tmp, 'cache');
+    const targetDir = path.join(cacheDir, cacheSlug(source));
+    await mkdir(targetDir, { recursive: true });
+    const logPath = path.join(tmp, 'git.log');
+    const gitBin = await writeFakeGit(tmp);
+
+    const prevLog = process.env.REPO_SAGA_GIT_LOG;
+    const prevValid = process.env.REPO_SAGA_GIT_VALID;
+    process.env.REPO_SAGA_GIT_LOG = logPath;
+    process.env.REPO_SAGA_GIT_VALID = 'false';
+    try {
+      await resolveSource(source, { cacheDir, gitBin });
+      const log = await readFile(logPath, 'utf8');
+      expect(log).toContain('-C\t' + targetDir + '\trev-parse\t--is-inside-work-tree');
+      expect(log).toContain(`clone\t--quiet\t${source}\t${targetDir}`);
+      expect(log).not.toContain('\tfetch\t--quiet\t--tags\t--prune');
+    } finally {
+      restoreEnv('REPO_SAGA_GIT_LOG', prevLog);
+      restoreEnv('REPO_SAGA_GIT_VALID', prevValid);
+    }
+  });
+});
+
+function cacheSlug(source: string): string {
+  return createHash('sha1').update(source).digest('hex').slice(0, 16);
+}
+
+async function writeFakeGit(dir: string): Promise<string> {
+  const gitBin = path.join(dir, 'fake-git.mjs');
+  await writeFile(
+    gitBin,
+    [
+      '#!/usr/bin/env node',
+      "import { appendFileSync, mkdirSync } from 'node:fs';",
+      'const args = process.argv.slice(2);',
+      "appendFileSync(process.env.REPO_SAGA_GIT_LOG, args.join('\\t') + '\\n');",
+      "if (args.includes('rev-parse')) {",
+      "  if (process.env.REPO_SAGA_GIT_VALID === 'true') { console.log('true'); process.exit(0); }",
+      '  process.exit(1);',
+      '}',
+      "if (args[0] === 'clone') mkdirSync(args[args.length - 1], { recursive: true });",
+      'process.exit(0);',
+      '',
+    ].join('\n'),
+    'utf8',
+  );
+  await chmod(gitBin, 0o755);
+  return gitBin;
+}
+
+function restoreEnv(key: string, value: string | undefined) {
+  if (value === undefined) delete process.env[key];
+  else process.env[key] = value;
+}
