@@ -17,11 +17,30 @@ export interface Job {
 
 export type JobListener = (job: Job, event: ProgressEvent) => void;
 
+export interface JobStoreOptions {
+  /** Keep at most this many jobs in memory. Active jobs are never pruned. */
+  maxJobs?: number;
+  /** Drop completed jobs older than this many milliseconds. */
+  retentionMs?: number;
+  /** Test hook for deterministic pruning. */
+  now?: () => number;
+}
+
 export class JobStore {
   private jobs = new Map<string, Job>();
   private listeners = new Map<string, Set<JobListener>>();
+  private maxJobs: number;
+  private retentionMs: number;
+  private now: () => number;
+
+  constructor(opts: JobStoreOptions = {}) {
+    this.maxJobs = opts.maxJobs ?? 100;
+    this.retentionMs = opts.retentionMs ?? 30 * 60_000;
+    this.now = opts.now ?? (() => Date.now());
+  }
 
   start(source: string, opts: { maxCommits?: number; cacheDir?: string } = {}): Job {
+    this.pruneCompleted();
     const id = randomUUID();
     const job: Job = {
       id,
@@ -36,11 +55,29 @@ export class JobStore {
     return job;
   }
 
+  seedCompleted(id: string, source: string, saga: Saga, events: ProgressEvent[] = []): Job {
+    const now = new Date(this.now()).toISOString();
+    const job: Job = {
+      id,
+      source,
+      status: 'done',
+      startedAt: now,
+      finishedAt: now,
+      events,
+      saga,
+    };
+    this.jobs.set(id, job);
+    this.pruneCompleted();
+    return job;
+  }
+
   get(id: string): Job | undefined {
+    this.pruneCompleted();
     return this.jobs.get(id);
   }
 
   list(): Job[] {
+    this.pruneCompleted();
     return [...this.jobs.values()];
   }
 
@@ -69,6 +106,31 @@ export class JobStore {
     }
   }
 
+  pruneCompleted() {
+    const now = this.now();
+    const completed = () =>
+      [...this.jobs.values()]
+        .filter((job) => job.status === 'done' || job.status === 'error')
+        .sort((a, b) => Date.parse(a.finishedAt ?? a.startedAt) - Date.parse(b.finishedAt ?? b.startedAt));
+
+    for (const job of completed()) {
+      const finishedAt = Date.parse(job.finishedAt ?? job.startedAt);
+      if (Number.isFinite(finishedAt) && now - finishedAt > this.retentionMs) {
+        this.deleteJob(job.id);
+      }
+    }
+
+    const remainingCompleted = completed();
+    while (this.jobs.size > this.maxJobs && remainingCompleted.length > 0) {
+      this.deleteJob(remainingCompleted.shift()!.id);
+    }
+  }
+
+  private deleteJob(id: string) {
+    this.jobs.delete(id);
+    this.listeners.delete(id);
+  }
+
   private async runJob(job: Job, opts: { maxCommits?: number; cacheDir?: string }) {
     job.status = 'running';
     const onProgress = (event: ProgressEvent) => {
@@ -89,6 +151,7 @@ export class JobStore {
       const finalEvent: ProgressEvent = { phase: 'done', message: 'Saga complete', progress: 1 };
       job.events.push(finalEvent);
       this.notify(job, finalEvent);
+      this.pruneCompleted();
     } catch (err) {
       job.status = 'error';
       job.finishedAt = new Date().toISOString();
@@ -99,6 +162,7 @@ export class JobStore {
       };
       job.events.push(errorEvent);
       this.notify(job, errorEvent);
+      this.pruneCompleted();
     }
   }
 }

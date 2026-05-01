@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { renderJson, renderMarkdown, renderSvg, type Lang, type SvgTheme } from '@repo-saga/renderer';
+import type { Saga } from '@repo-saga/core';
 import type { JobStore } from './jobs.js';
 
 const VALID_THEMES: SvgTheme[] = ['epic', 'dark-fantasy', 'academic', 'minimal'];
@@ -12,7 +13,7 @@ function pickLang(raw: string | undefined): Lang {
 export interface RouteOptions {
   jobs: JobStore;
   /** if a pre-computed saga was passed via CLI, expose it under /api/initial */
-  initialSagaJson?: string;
+  initialSaga?: Saga;
 }
 
 export async function registerRoutes(app: FastifyInstance, opts: RouteOptions) {
@@ -20,10 +21,11 @@ export async function registerRoutes(app: FastifyInstance, opts: RouteOptions) {
 
   app.get('/api/health', async () => ({ ok: true }));
 
-  if (opts.initialSagaJson) {
+  if (opts.initialSaga) {
+    const initialSaga = opts.initialSaga;
     app.get('/api/initial', async (_req, reply) => {
       reply.header('content-type', 'application/json');
-      return opts.initialSagaJson;
+      return renderJson(initialSaga);
     });
   }
 

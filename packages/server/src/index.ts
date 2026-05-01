@@ -17,6 +17,10 @@ export interface ServerOptions {
   initialSaga?: Saga;
   /** verbose fastify logging */
   logger?: boolean;
+  /** maximum jobs retained in memory */
+  maxJobs?: number;
+  /** completed-job retention window in milliseconds */
+  jobRetentionMs?: number;
 }
 
 export interface StartedServer {
@@ -28,18 +32,28 @@ export interface StartedServer {
   stop: () => Promise<void>;
 }
 
-export async function startServer(opts: ServerOptions = {}): Promise<StartedServer> {
-  const port = opts.port ?? 0; // 0 = random
-  const host = opts.host ?? '127.0.0.1';
+export interface CreatedServerApp {
+  app: FastifyInstance;
+  jobs: JobStore;
+}
+
+export async function createServerApp(opts: ServerOptions = {}): Promise<CreatedServerApp> {
   const app = Fastify({ logger: opts.logger ?? false });
 
   await app.register(cors, {
-    origin: true,
+    origin: isAllowedLocalOrigin,
   });
 
-  const jobs = new JobStore();
-  const initialJson = opts.initialSaga ? JSON.stringify(opts.initialSaga) : undefined;
-  await registerRoutes(app, { jobs, initialSagaJson: initialJson });
+  const jobs = new JobStore({
+    maxJobs: opts.maxJobs,
+    retentionMs: opts.jobRetentionMs,
+  });
+  if (opts.initialSaga) {
+    jobs.seedCompleted('initial', opts.initialSaga.repo.source, opts.initialSaga, [
+      { phase: 'done', message: 'Saga delivered from CLI', progress: 1 },
+    ]);
+  }
+  await registerRoutes(app, { jobs, initialSaga: opts.initialSaga });
 
   const root = opts.webRoot ?? defaultWebRoot();
   if (root && fs.existsSync(root)) {
@@ -78,6 +92,14 @@ export async function startServer(opts: ServerOptions = {}): Promise<StartedServ
       reply.send(placeholderHtml());
     });
   }
+
+  return { app, jobs };
+}
+
+export async function startServer(opts: ServerOptions = {}): Promise<StartedServer> {
+  const port = opts.port ?? 0; // 0 = random
+  const host = opts.host ?? '127.0.0.1';
+  const { app, jobs } = await createServerApp(opts);
 
   const address = await app.listen({ port, host });
   const u = new URL(address);
@@ -125,3 +147,26 @@ function placeholderHtml(): string {
 
 export { JobStore } from './jobs.js';
 export type { Job, JobStatus } from './jobs.js';
+
+export function isAllowedLocalOrigin(
+  origin: string | undefined,
+  cb: (err: Error | null, allow: boolean) => void,
+) {
+  if (!origin) {
+    cb(null, true);
+    return;
+  }
+
+  try {
+    const url = new URL(origin);
+    const allowed =
+      url.protocol === 'http:' &&
+      (url.hostname === 'localhost' ||
+        url.hostname === '127.0.0.1' ||
+        url.hostname === '::1' ||
+        url.hostname === '[::1]');
+    cb(null, allowed);
+  } catch {
+    cb(null, false);
+  }
+}
