@@ -6,8 +6,9 @@ import kleur from 'kleur';
 import open from 'open';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-interface Args {
+export interface Args {
   source?: string;
   out: string;
   theme: SvgTheme;
@@ -25,7 +26,7 @@ interface Args {
 const VALID_THEMES: SvgTheme[] = ['epic', 'dark-fantasy', 'academic', 'minimal'];
 const VALID_LANGS: Lang[] = ['en', 'zh'];
 
-function parseArgs(argv: string[]): Args {
+export function parseArgs(argv: string[]): Args {
   const args: Args = {
     out: process.cwd(),
     theme: 'epic',
@@ -67,6 +68,15 @@ function parseArgs(argv: string[]): Args {
     }
   }
   return args;
+}
+
+export function validateArgs(args: Args): string | undefined {
+  if (args.json && args.server) return '--json is only supported with --no-server';
+  return undefined;
+}
+
+export function isJsonStdoutOnly(args: Args): boolean {
+  return Boolean(args.json && !args.server);
 }
 
 function help() {
@@ -125,7 +135,7 @@ async function writeOutputs(saga: Saga, outDir: string, theme: SvgTheme, lang: L
   ]);
 }
 
-function progressLogger(): (event: ProgressEvent) => void {
+export function progressLogger(write: (line: string) => void = console.log): (event: ProgressEvent) => void {
   let last = '';
   return (event) => {
     const phase = kleur.cyan(event.phase.padEnd(10));
@@ -133,7 +143,7 @@ function progressLogger(): (event: ProgressEvent) => void {
     const line = `${phase}${event.message}${pct}`;
     if (line === last) return;
     last = line;
-    console.log(line);
+    write(line);
   };
 }
 
@@ -147,6 +157,10 @@ async function main() {
     console.log(await readVersion());
     return;
   }
+  const validationError = validateArgs(args);
+  if (validationError) die(validationError);
+  const jsonStdoutOnly = isJsonStdoutOnly(args);
+  const info = jsonStdoutOnly ? console.error : console.log;
 
   if (!args.source) {
     // Just launch the web UI
@@ -155,7 +169,7 @@ async function main() {
       die('No repo specified and --no-server given. Nothing to do.');
     }
     const server = await startServer({ port: args.port });
-    console.log(`${kleur.green('▲ repo-saga')} listening on ${kleur.bold(server.url)}`);
+    info(`${kleur.green('▲ repo-saga')} listening on ${kleur.bold(server.url)}`);
     if (args.open) await tryOpen(server.url);
     process.on('SIGINT', () => {
       console.log('\nShutting down…');
@@ -165,9 +179,9 @@ async function main() {
   }
 
   // analyse and emit
-  console.log(`${kleur.green('▲ repo-saga')} analysing ${kleur.bold(args.source)}`);
+  info(`${kleur.green('▲ repo-saga')} analysing ${kleur.bold(args.source)}`);
   const saga = await generateSaga(args.source, {
-    onProgress: progressLogger(),
+    onProgress: progressLogger(info),
     maxCommits: args.maxCommits,
     cacheDir: args.cacheDir,
   });
@@ -178,23 +192,23 @@ async function main() {
 
   const outDir = path.resolve(args.out);
   await writeOutputs(saga, outDir, args.theme, args.lang);
-  console.log('');
-  console.log(`${kleur.green('✓')} Wrote ${kleur.bold(path.join(outDir, 'saga.json'))}`);
-  console.log(`${kleur.green('✓')} Wrote ${kleur.bold(path.join(outDir, 'saga.md'))}`);
-  console.log(`${kleur.green('✓')} Wrote ${kleur.bold(path.join(outDir, 'saga.svg'))} (theme: ${args.theme}, lang: ${args.lang})`);
-  console.log('');
-  console.log(
+  info('');
+  info(`${kleur.green('✓')} Wrote ${kleur.bold(path.join(outDir, 'saga.json'))}`);
+  info(`${kleur.green('✓')} Wrote ${kleur.bold(path.join(outDir, 'saga.md'))}`);
+  info(`${kleur.green('✓')} Wrote ${kleur.bold(path.join(outDir, 'saga.svg'))} (theme: ${args.theme}, lang: ${args.lang})`);
+  info('');
+  info(
     `${kleur.gray('Eras:')} ${saga.eras.length}  ${kleur.gray('Events:')} ${saga.events.length}  ${kleur.gray('Commits:')} ${saga.repo.commitCount.toLocaleString()}`,
   );
   for (const era of saga.eras) {
-    console.log(`  ${kleur.cyan(`${era.startYear}–${era.endYear}`)}  ${kleur.bold(era.name)}`);
+    info(`  ${kleur.cyan(`${era.startYear}–${era.endYear}`)}  ${kleur.bold(era.name)}`);
   }
 
   if (!args.server) return;
 
   const server = await startServer({ port: args.port, initialSaga: saga });
-  console.log('');
-  console.log(`${kleur.green('▲ repo-saga')} preview at ${kleur.bold(server.url)}`);
+  info('');
+  info(`${kleur.green('▲ repo-saga')} preview at ${kleur.bold(server.url)}`);
   if (args.open) await tryOpen(server.url);
   process.on('SIGINT', () => {
     console.log('\nShutting down…');
@@ -210,8 +224,14 @@ async function tryOpen(url: string) {
   }
 }
 
-main().catch((err) => {
-  const msg = err instanceof Error ? err.stack ?? err.message : String(err);
-  console.error(kleur.red(msg));
-  process.exit(1);
-});
+function isDirectRun(): boolean {
+  return Boolean(process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url));
+}
+
+if (isDirectRun()) {
+  main().catch((err) => {
+    const msg = err instanceof Error ? err.stack ?? err.message : String(err);
+    console.error(kleur.red(msg));
+    process.exit(1);
+  });
+}

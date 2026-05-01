@@ -1,6 +1,7 @@
 {
   "name": "repo-saga-monorepo",
   "private": true,
+  "type": "module",
   "version": "0.1.0",
   "description": "Render the civilization history of any git repository",
   "scripts": {
