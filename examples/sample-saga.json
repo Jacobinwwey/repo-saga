@@ -1,0 +1,343 @@
+{
+  "schemaVersion": 1,
+  "repo": {
+    "name": "demo-project",
+    "source": "https://github.com/example/demo-project",
+    "resolvedPath": "/tmp/repo-saga-cache/abcdef0123456789",
+    "analyzedAt": "2026-01-15T10:42:00.000Z",
+    "commitCount": 1842,
+    "firstCommitDate": "2019-03-12T08:00:00.000Z",
+    "lastCommitDate": "2025-12-30T17:25:00.000Z",
+    "contributors": 26,
+    "defaultBranch": "main",
+    "tagCount": 21
+  },
+  "eras": [
+    {
+      "id": "era-1",
+      "name": "Ancient Era: Initial Chaos",
+      "startYear": 2019,
+      "endYear": 2020,
+      "theme": "foundations and improvisation",
+      "summary": "2019–2020: 412 commits, 4 contributors, +56,213 / -18,402 lines. Defining moments: Initial Chaos, Testing Famine.",
+      "dominantEvents": [
+        "initial-chaos-2019",
+        "testing-famine-2019"
+      ],
+      "evidence": [
+        "Spanned 2 year(s) with 412 commits",
+        "Initial Chaos (2019) — 168 commits in the first 60 day(s)",
+        "Testing Famine (2019–2020) — Test insertions stayed below 5% of code insertions from 2019 to 2020"
+      ],
+      "summaryStats": {
+        "commits": 412,
+        "contributors": 4,
+        "insertions": 56213,
+        "deletions": 18402
+      }
+    },
+    {
+      "id": "era-2",
+      "name": "Migration Era: TypeScript Invasion",
+      "startYear": 2021,
+      "endYear": 2022,
+      "theme": "a typed people supplanting the old idioms",
+      "summary": "2021–2022: 690 commits, 11 contributors, +112,940 / -88,510 lines. Defining moments: TypeScript Invasion, Great Refactor War.",
+      "dominantEvents": [
+        "typescript-invasion-2021",
+        "great-refactor-war-2022"
+      ],
+      "evidence": [
+        "Spanned 2 year(s) with 690 commits",
+        "TypeScript Invasion (2021–2022) — tsconfig.json first appeared on 2021-01-15",
+        "Great Refactor War (2022) — 612 distinct files changed in a 90-day window"
+      ],
+      "summaryStats": {
+        "commits": 690,
+        "contributors": 11,
+        "insertions": 112940,
+        "deletions": 88510
+      }
+    },
+    {
+      "id": "era-3",
+      "name": "Federation Era: Monorepo Federation",
+      "startYear": 2023,
+      "endYear": 2024,
+      "theme": "city-states united under one workspace banner",
+      "summary": "2023–2024: 540 commits, 17 contributors, +98,440 / -62,160 lines. Defining moments: Monorepo Federation, Linting Theocracy.",
+      "dominantEvents": [
+        "monorepo-federation-2023",
+        "linting-theocracy-2023"
+      ],
+      "evidence": [
+        "Spanned 2 year(s) with 540 commits",
+        "Monorepo Federation (2023) — packages/ directory came into existence",
+        "Linting Theocracy (2023–2024) — eslint arrived at .eslintrc.cjs on 2023-04-02"
+      ],
+      "summaryStats": {
+        "commits": 540,
+        "contributors": 17,
+        "insertions": 98440,
+        "deletions": 62160
+      }
+    },
+    {
+      "id": "era-4",
+      "name": "Age of the Oracle: AI Priesthood",
+      "startYear": 2025,
+      "endYear": 2025,
+      "theme": "machine intelligence is wired into the daily liturgy",
+      "summary": "2025: 200 commits, 19 contributors, +42,001 / -19,778 lines. Defining moments: AI Priesthood, Release Empire.",
+      "dominantEvents": [
+        "ai-priesthood-2025",
+        "release-empire-2024"
+      ],
+      "evidence": [
+        "Spanned 1 year(s) with 200 commits",
+        "AI Priesthood (2025) — 2025-02-12: \"openai\" appeared in path src/ai/openai.ts",
+        "Release Empire (2024–2025) — 21 tags found between 2021-09-01 and 2025-12-21"
+      ],
+      "summaryStats": {
+        "commits": 200,
+        "contributors": 19,
+        "insertions": 42001,
+        "deletions": 19778
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "initial-chaos-2019",
+      "type": "initial-chaos",
+      "title": "Initial Chaos",
+      "startDate": "2019-03-12T08:00:00.000Z",
+      "endDate": "2019-05-11T08:00:00.000Z",
+      "startYear": 2019,
+      "endYear": 2019,
+      "severity": "major",
+      "confidence": 0.84,
+      "narrative": "The first tribes gather around a fragile structure of files and hope. Foundational artefacts appear in rapid succession.",
+      "evidence": [
+        "168 commits in the first 60 day(s)",
+        "21,402 insertions during the founding period",
+        "package.json appeared at package.json on 2019-03-12",
+        "Earliest contributors: Alice, Bob, Carol"
+      ],
+      "score": 2.52
+    },
+    {
+      "id": "typescript-invasion-2021",
+      "type": "typescript-invasion",
+      "title": "TypeScript Invasion",
+      "startDate": "2021-01-15T00:00:00.000Z",
+      "endDate": "2022-12-31T23:59:59.000Z",
+      "startYear": 2021,
+      "endYear": 2022,
+      "severity": "major",
+      "confidence": 0.9,
+      "narrative": "A migration of types swept across the land. Untyped artefacts gave way to interfaces, generics, and the rule of strict.",
+      "evidence": [
+        "tsconfig.json first appeared on 2021-01-15 (tsconfig.json)",
+        "TypeScript crossed 50% of code insertions in 2021",
+        "By 2022, +84,210 TS insertions vs +9,322 JS insertions"
+      ],
+      "score": 2.7
+    },
+    {
+      "id": "great-refactor-war-2022",
+      "type": "great-refactor-war",
+      "title": "Great Refactor War",
+      "startDate": "2022-04-08T00:00:00.000Z",
+      "endDate": "2022-07-07T00:00:00.000Z",
+      "startYear": 2022,
+      "endYear": 2022,
+      "severity": "major",
+      "confidence": 0.72,
+      "narrative": "A sweeping campaign of restructuring redrew the map. Old fortresses fell, new districts rose, and naming conventions were re-litigated in blood.",
+      "evidence": [
+        "612 distinct files changed in a 90-day window",
+        "184 files renamed during the upheaval",
+        "62 files purged from the kingdom",
+        "New top-level structures appeared: packages, apps"
+      ],
+      "score": 2.16
+    },
+    {
+      "id": "monorepo-federation-2023",
+      "type": "monorepo-federation",
+      "title": "Monorepo Federation",
+      "startDate": "2023-02-08T00:00:00.000Z",
+      "endDate": "2023-04-12T00:00:00.000Z",
+      "startYear": 2023,
+      "endYear": 2023,
+      "severity": "major",
+      "confidence": 0.82,
+      "narrative": "City-states united under a single repo banner. Workspace manifests defined the borders; build orchestrators kept the peace.",
+      "evidence": [
+        "pnpm-workspace arrived at pnpm-workspace.yaml on 2023-02-08",
+        "turbo arrived at turbo.json on 2023-04-12",
+        "packages/ directory came into existence",
+        "apps/ directory came into existence"
+      ],
+      "score": 2.46
+    },
+    {
+      "id": "linting-theocracy-2023",
+      "type": "linting-theocracy",
+      "title": "Linting Theocracy",
+      "startDate": "2023-04-02T00:00:00.000Z",
+      "endDate": "2024-09-30T00:00:00.000Z",
+      "startYear": 2023,
+      "endYear": 2024,
+      "severity": "major",
+      "confidence": 0.8,
+      "narrative": "A clergy of formatters and linters declared semicolons, quote styles, and trailing commas as articles of faith.",
+      "evidence": [
+        "eslint arrived at .eslintrc.cjs on 2023-04-02",
+        "prettier arrived at .prettierrc on 2023-04-02",
+        "husky arrived at .husky/pre-commit on 2023-05-19"
+      ],
+      "score": 2.4
+    },
+    {
+      "id": "ai-priesthood-2025",
+      "type": "ai-priesthood",
+      "title": "AI Priesthood",
+      "startDate": "2025-02-12T00:00:00.000Z",
+      "endDate": "2025-12-29T00:00:00.000Z",
+      "startYear": 2025,
+      "endYear": 2025,
+      "severity": "notable",
+      "confidence": 0.6,
+      "narrative": "A new clergy arrived bearing model weights and prompt scrolls. Vector stores rose where SQL had once ruled.",
+      "evidence": [
+        "2025-02-12: \"openai\" appeared in path src/ai/openai.ts",
+        "2025-03-05: \"anthropic\" appeared in commit a1b2c3d \"feat: anthropic-backed reranker\"",
+        "2025-09-22: \"langchain\" appeared in path src/ai/langchain-bridge.ts",
+        "…and 7 more AI-keyword hits"
+      ],
+      "score": 1.2
+    },
+    {
+      "id": "release-empire-2024",
+      "type": "release-empire",
+      "title": "Release Empire",
+      "startDate": "2021-09-01T00:00:00.000Z",
+      "endDate": "2025-12-21T00:00:00.000Z",
+      "startYear": 2021,
+      "endYear": 2025,
+      "severity": "major",
+      "confidence": 0.6,
+      "narrative": "Versioned banners flew over every milestone. Tags multiplied like bureaucratic decrees, marking a steady cadence of triumphs and rollbacks alike.",
+      "evidence": [
+        "21 tags found between 2021-09-01 and 2025-12-21",
+        "Earliest tag: v0.1.0",
+        "Latest tag: v3.4.2",
+        "21 tag(s) follow a SemVer-ish pattern"
+      ],
+      "score": 1.8
+    }
+  ],
+  "stats": {
+    "commitsByYear": {
+      "2019": 220,
+      "2020": 192,
+      "2021": 312,
+      "2022": 378,
+      "2023": 264,
+      "2024": 276,
+      "2025": 200
+    },
+    "insertionsByYear": {
+      "2019": 32140,
+      "2020": 24073,
+      "2021": 56230,
+      "2022": 56710,
+      "2023": 48210,
+      "2024": 50230,
+      "2025": 42001
+    },
+    "deletionsByYear": {
+      "2019": 8201,
+      "2020": 10201,
+      "2021": 31201,
+      "2022": 57309,
+      "2023": 28100,
+      "2024": 34060,
+      "2025": 19778
+    },
+    "contributorsByYear": {
+      "2019": 3,
+      "2020": 4,
+      "2021": 7,
+      "2022": 11,
+      "2023": 14,
+      "2024": 17,
+      "2025": 19
+    },
+    "testRatioByYear": {
+      "2019": 0.022,
+      "2020": 0.041,
+      "2021": 0.18,
+      "2022": 0.27,
+      "2023": 0.34,
+      "2024": 0.32,
+      "2025": 0.36
+    },
+    "languagesByYear": {
+      "2021": {
+        "ts": 14201,
+        "tsx": 6203,
+        "js": 8210
+      },
+      "2022": {
+        "ts": 38201,
+        "tsx": 7201,
+        "js": 1310
+      },
+      "2025": {
+        "ts": 28102,
+        "tsx": 9100
+      }
+    },
+    "topContributors": [
+      {
+        "name": "Alice Founder",
+        "email": "alice@example.com",
+        "commits": 412
+      },
+      {
+        "name": "Bob Architect",
+        "email": "bob@example.com",
+        "commits": 308
+      },
+      {
+        "name": "Carol Refactor",
+        "email": "carol@example.com",
+        "commits": 252
+      }
+    ]
+  },
+  "meta": {
+    "generator": "repo-saga",
+    "generatorVersion": "0.1.0",
+    "durationMs": 4231,
+    "detectorsRun": [
+      "initial-chaos",
+      "typescript-invasion",
+      "great-refactor-war",
+      "testing-famine",
+      "testing-renaissance",
+      "linting-theocracy",
+      "container-empire",
+      "monorepo-federation",
+      "dependency-cataclysm",
+      "founder-exodus",
+      "new-dynasty",
+      "ai-priesthood",
+      "bug-plague",
+      "release-empire"
+    ]
+  }
+}

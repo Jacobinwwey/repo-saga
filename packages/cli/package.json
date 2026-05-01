@@ -1,0 +1,46 @@
+{
+  "name": "repo-saga",
+  "version": "0.1.0",
+  "description": "Render the civilization history of any git repository",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "repo-saga": "./dist/index.js"
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist .tsbuildinfo",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts --max-warnings 0",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@repo-saga/core": "workspace:*",
+    "@repo-saga/renderer": "workspace:*",
+    "@repo-saga/server": "workspace:*",
+    "kleur": "^4.1.5",
+    "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "git",
+    "saga",
+    "civilization",
+    "timeline",
+    "history",
+    "monorepo",
+    "evidence"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "repo-saga-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Render the civilization history of any git repository",
+  "scripts": {
+    "build": "pnpm -r --filter \"./packages/*\" run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint packages --ext .ts,.tsx --max-warnings 0",
+    "lint:fix": "eslint packages --ext .ts,.tsx --fix",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,js,json,md}\"",
+    "clean": "pnpm -r run clean",
+    "dev": "pnpm --filter @repo-saga/cli run dev"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@types/node": "^20.12.7",
+    "eslint": "^9.13.0",
+    "globals": "^15.11.0",
+    "prettier": "^3.2.5",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.12.0",
+    "vitest": "^1.6.0"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "license": "MIT",
+  "author": "repo-saga contributors"
+}
