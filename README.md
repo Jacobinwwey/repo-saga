@@ -1,6 +1,14 @@
 # repo-saga
 
+[English](./README.md) · [中文](./README.zh.md)
+
 > Render the **civilization history** of any git repository — eras, events, posters, and JSON, generated locally from heuristics.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/teee32/repo-saga/main/examples/sample-saga.svg" width="820" alt="repo-saga sample poster" />
+  <br/>
+  <sub>Sample poster (<code>epic</code> theme). The same data renders in English and 中文 — see <a href="./examples/">examples/</a>.</sub>
+</p>
 
 `repo-saga` reads a repo's git history and turns it into a "chronicle": a small set of named **eras** ("Ancient Era: Initial Chaos", "Migration Era: TypeScript Invasion", "Modern Era: Linting Theocracy", …) and **events** with evidence pulled directly from the commits. Each meme is grounded in a fact: a tsconfig.json that appeared on a date, a linter that arrived, a 90-day window where 800 files moved.
 
