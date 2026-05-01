@@ -263,3 +263,7 @@ pnpm --filter @repo-saga/web run dev
 ## 许可证
 
 [MIT](./LICENSE) © repo-saga 贡献者
+
+## 社区
+
+讨论、反馈与点子：[LinuxDo](https://linux.do)

@@ -262,3 +262,7 @@ Issues and PRs are welcome. The core idea: every chronicle line should have evid
 ## License
 
 [MIT](./LICENSE) © repo-saga contributors
+
+## Community
+
+Discussion, feedback, and ideas: [LinuxDo](https://linux.do)
