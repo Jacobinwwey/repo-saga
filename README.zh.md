@@ -38,23 +38,32 @@ done       编年完成。                          100%
 
 ## 安装
 
-`repo-saga` 是单个 CLI bin。最快的用法是 `npx`：
+> 🚧 npm 包还没发布 —— `npx repo-saga` 会在后续版本提供。当前请从源码运行：
 
 ```bash
-npx repo-saga                              # 启动本地 web UI
-npx repo-saga https://github.com/owner/repo
-npx repo-saga ./my-project --theme academic --lang zh --out ./out
+git clone https://github.com/teee32/repo-saga.git
+cd repo-saga
+pnpm install
+pnpm build
 ```
 
-全局安装：
+随后直接调用 CLI：
 
 ```bash
-npm i -g repo-saga
-# 或
-pnpm add -g repo-saga
+node packages/cli/dist/index.js                              # 启动本地 web UI
+node packages/cli/dist/index.js https://github.com/owner/repo
+node packages/cli/dist/index.js ./my-project --theme academic --lang zh --out ./out
 ```
 
-要求 Node.js 18.17+，并且 `git` 在 `$PATH` 中可用。
+想要短命令的话，可以加 alias：
+
+```bash
+alias repo-saga="node $(pwd)/packages/cli/dist/index.js"
+# 或者把当前 checkout 的 CLI 全局 link：
+pnpm --filter repo-saga link --global
+```
+
+要求 Node.js 18.17+、`pnpm`，并且 `git` 在 `$PATH` 中可用。
 
 ## CLI 用法
 

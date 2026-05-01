@@ -38,23 +38,32 @@ Eras: 4   Events: 9   Commits: 1,302
 
 ## Install
 
-`repo-saga` is published as a single CLI bin. The fastest way to use it is `npx`:
+> 🚧 The npm package isn't published yet — `npx repo-saga` will land in a future release. For now, run from source:
 
 ```bash
-npx repo-saga                              # opens the local web UI
-npx repo-saga https://github.com/owner/repo
-npx repo-saga ./my-project --theme academic --out ./out
+git clone https://github.com/teee32/repo-saga.git
+cd repo-saga
+pnpm install
+pnpm build
 ```
 
-To install globally:
+Then run the CLI directly:
 
 ```bash
-npm i -g repo-saga
-# or
-pnpm add -g repo-saga
+node packages/cli/dist/index.js                              # opens the local web UI
+node packages/cli/dist/index.js https://github.com/owner/repo
+node packages/cli/dist/index.js ./my-project --theme academic --lang zh --out ./out
 ```
 
-Requires Node.js 18.17+ and `git` available on `$PATH`.
+If you'd like a shorter command, alias it:
+
+```bash
+alias repo-saga="node $(pwd)/packages/cli/dist/index.js"
+# or link the CLI globally for this checkout:
+pnpm --filter repo-saga link --global
+```
+
+Requires Node.js 18.17+, `pnpm`, and `git` available on `$PATH`.
 
 ## CLI
 
