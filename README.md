@@ -134,7 +134,7 @@ Evidence:
 
 ### `saga.svg`
 
-A standalone, themable SVG poster. No fonts or images embedded — pure XML. Looks like a tabletop "history of a project" map.
+A standalone, themable SVG poster with self-contained raster ornaments embedded as PNG data URIs. Looks like a tabletop "history of a project" map.
 
 ## Web UI
 

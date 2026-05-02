@@ -137,7 +137,10 @@ export function App() {
     <div className="rs-app">
       <header className="rs-header">
         <div className="rs-brand">
-          <span className="rs-brand-icon">⚔️</span>
+          <span className="rs-brand-mark" aria-hidden="true">
+            <span className="rs-brand-blade rs-brand-blade-left" />
+            <span className="rs-brand-blade rs-brand-blade-right" />
+          </span>
           <span className="rs-brand-text">repo-saga</span>
         </div>
         <Toolbar theme={theme} onTheme={setTheme} />
@@ -167,18 +170,22 @@ export function App() {
         )}
 
         {!job && (
-          <section className="rs-blurb">
-            <h2>Render the civilization history of any repository</h2>
-            <p>
-              Paste a GitHub URL or a local path. repo-saga clones (or reads) the repo, mines git
-              history with heuristic detectors, and renders eras like “TypeScript Invasion” or
-              “Linting Theocracy” — every meme grounded in evidence from your history.
-            </p>
-            <ul>
-              <li>Runs entirely on your machine. No external AI APIs.</li>
-              <li>Outputs Markdown, JSON, and a printable SVG poster.</li>
-              <li>Switch between four chronicle themes.</li>
-            </ul>
+          <section className="rs-blurb rs-chronicle-hero">
+            <div className="rs-hero-copy">
+              <p className="rs-kicker">A repository chronicle</p>
+              <h2>Render the civilization history of any repository</h2>
+              <p>
+                Paste a GitHub URL or a local path. repo-saga mines git history with heuristic
+                detectors, then turns migrations, refactors, releases, and rituals into an
+                evidence-grounded chronicle.
+              </p>
+              <ul>
+                <li>Runs entirely on your machine. No external AI APIs.</li>
+                <li>Outputs Markdown, JSON, and a printable SVG poster.</li>
+                <li>Switch between four chronicle themes.</li>
+              </ul>
+            </div>
+            <div className="rs-hero-art" aria-hidden="true" />
           </section>
         )}
       </main>

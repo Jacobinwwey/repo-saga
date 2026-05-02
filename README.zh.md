@@ -135,7 +135,7 @@ pnpm --filter repo-saga link --global
 
 ### `saga.svg`
 
-独立、可换主题的 SVG 海报。不嵌入字体或图片，纯 XML 文本。看起来像桌游里的"项目历史地图"。
+独立、可换主题的 SVG 海报，内嵌自包含的 PNG data URI 装饰资源。看起来像桌游里的"项目历史地图"。
 
 ## Web UI
 
