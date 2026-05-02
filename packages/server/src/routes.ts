@@ -89,15 +89,18 @@ export async function registerRoutes(app: FastifyInstance, opts: RouteOptions) {
     return reply;
   });
 
-  app.get<{ Params: { id: string } }>('/api/jobs/:id/saga.json', async (req, reply) => {
-    const job = jobs.get(req.params.id);
-    if (!job?.saga) {
-      reply.code(job ? 425 : 404);
-      return { error: job ? 'Saga not yet ready' : 'Job not found' };
-    }
-    reply.header('content-type', 'application/json; charset=utf-8');
-    return renderJson(job.saga);
-  });
+  app.get<{ Params: { id: string }; Querystring: { lang?: string } }>(
+    '/api/jobs/:id/saga.json',
+    async (req, reply) => {
+      const job = jobs.get(req.params.id);
+      if (!job?.saga) {
+        reply.code(job ? 425 : 404);
+        return { error: job ? 'Saga not yet ready' : 'Job not found' };
+      }
+      reply.header('content-type', 'application/json; charset=utf-8');
+      return renderJson(job.saga, { lang: pickLang(req.query?.lang) });
+    },
+  );
 
   app.get<{ Params: { id: string }; Querystring: { lang?: string } }>(
     '/api/jobs/:id/saga.md',

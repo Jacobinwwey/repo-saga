@@ -1,23 +1,60 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Saga, Era, DetectedEvent } from '@repo-saga/core';
-import { ThemeName } from '../theme';
+import {
+  composeEraSummary,
+  translateEvidence,
+  translateSaga,
+  type Lang,
+} from '@repo-saga/renderer/i18n';
+import { formatNumber, formatTemplate, type UiCopy, type UiLang } from '../i18n';
+import type { ThemeName } from '../theme';
 
 interface Props {
   saga: Saga;
   theme: ThemeName;
+  themeLabel: string;
+  lang: UiLang;
+  copy: UiCopy['saga'];
   downloadSvgUrl?: string;
   downloadJsonUrl?: string;
   downloadMdUrl?: string;
 }
 
-export function SagaView({ saga, theme, downloadSvgUrl, downloadJsonUrl, downloadMdUrl }: Props) {
+export function SagaView({
+  saga,
+  theme,
+  themeLabel,
+  lang,
+  copy,
+  downloadSvgUrl,
+  downloadJsonUrl,
+  downloadMdUrl,
+}: Props) {
   const [selectedEra, setSelectedEra] = useState<string | undefined>(saga.eras[0]?.id);
   const [showJson, setShowJson] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const activeEra = saga.eras.find((e) => e.id === selectedEra) ?? saga.eras[0];
+  const localizedSaga = useMemo(() => translateSaga(saga, lang as Lang), [saga, lang]);
+  const rawEraById = useMemo(() => new Map(saga.eras.map((era) => [era.id, era])), [saga.eras]);
+  const localizedJson = useMemo(
+    () => ({
+      ...localizedSaga,
+      eras: localizedSaga.eras.map((era) => ({
+        ...era,
+        summary: eraSummary(era),
+        evidence: eraEvidence(era),
+      })),
+      events: localizedSaga.events.map((event) => ({
+        ...event,
+        evidence: event.evidence.map((item) => translateEvidence(item, lang as Lang)),
+      })),
+    }),
+    [localizedSaga, lang],
+  );
+
+  const activeEra = localizedSaga.eras.find((e) => e.id === selectedEra) ?? localizedSaga.eras[0];
   const eventsInEra = activeEra
-    ? saga.events.filter((ev) => ev.endYear >= activeEra.startYear && ev.startYear <= activeEra.endYear)
+    ? localizedSaga.events.filter((ev) => ev.endYear >= activeEra.startYear && ev.startYear <= activeEra.endYear)
     : [];
 
   async function copyMarkdown() {
@@ -33,54 +70,77 @@ export function SagaView({ saga, theme, downloadSvgUrl, downloadJsonUrl, downloa
     }
   }
 
+  function eraSummary(era: Era): string {
+    const rawEra = rawEraById.get(era.id) ?? era;
+    return lang === 'zh' ? composeEraSummary(rawEra, saga.events, lang as Lang) : rawEra.summary;
+  }
+
+  function eraEvidence(era: Era): string[] {
+    const rawEra = rawEraById.get(era.id) ?? era;
+    return rawEra.evidence.map((item) => translateEvidence(item, lang as Lang));
+  }
+
   return (
     <div className="rs-saga">
       <header className="rs-saga-header">
         <div>
-          <h2>The Civilization of {saga.repo.name}</h2>
+          <h2>{formatTemplate(copy.title, { name: saga.repo.name })}</h2>
           <p className="rs-saga-meta">
-            <span>{saga.repo.commitCount.toLocaleString()} commits</span>
+            <span>
+              {formatNumber(saga.repo.commitCount, lang)} {copy.commits}
+            </span>
             <span>·</span>
-            <span>{saga.repo.contributors} contributors</span>
+            <span>
+              {formatNumber(saga.repo.contributors, lang)} {copy.contributors}
+            </span>
             <span>·</span>
-            <span>{saga.repo.tagCount} tags</span>
+            <span>
+              {formatNumber(saga.repo.tagCount, lang)} {copy.tags}
+            </span>
             <span>·</span>
-            <span>{saga.eras.length} eras</span>
+            <span>
+              {formatNumber(saga.eras.length, lang)} {copy.eras}
+            </span>
             <span>·</span>
-            <span>{saga.events.length} events</span>
+            <span>
+              {formatNumber(saga.events.length, lang)} {copy.events}
+            </span>
           </p>
         </div>
         <div className="rs-saga-actions">
           {downloadSvgUrl && (
             <a className="rs-btn" href={downloadSvgUrl} download={`${saga.repo.name}-saga.svg`}>
-              Download SVG
+              {copy.downloadSvg}
             </a>
           )}
           {downloadMdUrl && (
             <button className="rs-btn" type="button" onClick={copyMarkdown}>
-              {copied ? 'Copied ✓' : 'Copy Markdown'}
+              {copied ? `${copy.copied} ✓` : copy.copyMarkdown}
             </button>
           )}
           {downloadJsonUrl && (
             <a className="rs-btn" href={downloadJsonUrl} download={`${saga.repo.name}-saga.json`}>
-              Download JSON
+              {copy.downloadJson}
             </a>
           )}
           <button className="rs-btn" type="button" onClick={() => setShowJson((v) => !v)}>
-            {showJson ? 'Hide JSON' : 'View JSON'}
+            {showJson ? copy.hideJson : copy.viewJson}
           </button>
         </div>
       </header>
 
       {downloadSvgUrl && (
         <div className="rs-saga-poster">
-          <img src={downloadSvgUrl} alt={`${saga.repo.name} civilization poster (${theme} theme)`} />
+          <img
+            src={downloadSvgUrl}
+            alt={formatTemplate(copy.posterAlt, { name: saga.repo.name, theme: themeLabel || theme })}
+          />
         </div>
       )}
 
       <div className="rs-saga-grid">
         <ol className="rs-era-list">
-          {saga.eras.map((era) => (
+          {localizedSaga.eras.map((era) => (
             <li
               key={era.id}
               className={`rs-era-item${era.id === activeEra?.id ? ' rs-active' : ''}`}
@@ -94,38 +154,46 @@ export function SagaView({ saga, theme, downloadSvgUrl, downloadJsonUrl, downloa
                     {era.startYear}–{era.endYear} · {era.theme}
                   </small>
                 </p>
-                <p className="rs-era-summary">{era.summary}</p>
+                <p className="rs-era-summary">{eraSummary(era)}</p>
               </div>
             </li>
           ))}
         </ol>
         <div className="rs-event-panel">
-          <h3>{activeEra ? activeEra.name : 'No era selected'}</h3>
+          <h3>{activeEra ? activeEra.name : copy.noEraSelected}</h3>
           {activeEra && activeEra.evidence.length > 0 && (
             <ul className="rs-evidence-list">
-              {activeEra.evidence.map((ev, idx) => (
+              {eraEvidence(activeEra).map((ev, idx) => (
                 <li key={idx}>{ev}</li>
               ))}
             </ul>
           )}
-          <h4>Events</h4>
-          {eventsInEra.length === 0 && <p className="rs-empty">No detected events in this era.</p>}
+          <h4>{copy.events}</h4>
+          {eventsInEra.length === 0 && <p className="rs-empty">{copy.noEvents}</p>}
           {eventsInEra.map((ev) => (
-            <EventCard key={ev.id} event={ev} />
+            <EventCard key={ev.id} event={ev} lang={lang} copy={copy} />
           ))}
         </div>
       </div>
 
       {showJson && (
         <div className="rs-json">
-          <pre>{JSON.stringify(saga, null, 2)}</pre>
+          <pre>{JSON.stringify(localizedJson, null, 2)}</pre>
         </div>
       )}
     </div>
   );
 }
 
-function EventCard({ event }: { event: DetectedEvent }) {
+function EventCard({
+  event,
+  lang,
+  copy,
+}: {
+  event: DetectedEvent;
+  lang: UiLang;
+  copy: UiCopy['saga'];
+}) {
   return (
     <article className={`rs-event rs-sev-${event.severity}`}>
       <header>
@@ -135,16 +203,16 @@ function EventCard({ event }: { event: DetectedEvent }) {
             ? String(event.startYear)
             : `${event.startYear}–${event.endYear}`}
         </span>
-        <span className="rs-event-sev">{event.severity}</span>
+        <span className="rs-event-sev">{copy.severityLabels[event.severity]}</span>
       </header>
       <p className="rs-event-narrative">{event.narrative}</p>
       <ul className="rs-event-evidence">
         {event.evidence.map((e, i) => (
-          <li key={i}>{e}</li>
+          <li key={i}>{translateEvidence(e, lang as Lang)}</li>
         ))}
       </ul>
       <footer>
-        confidence: <strong>{(event.confidence * 100).toFixed(0)}%</strong>
+        {copy.confidence}: <strong>{(event.confidence * 100).toFixed(0)}%</strong>
       </footer>
     </article>
   );

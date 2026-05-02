@@ -164,6 +164,35 @@ describe('renderSvg', () => {
     const svg = renderSvg(fixture, { lang: 'zh', theme: 'dark-fantasy' });
     expect(svg).toContain('PingFang SC');
   });
+
+  it('truncates overcrowded poster labels instead of emitting unbounded text', () => {
+    const crowded = JSON.parse(JSON.stringify(fixture)) as Saga;
+    crowded.repo.name = 'demo-project-with-a-very-long-name-that-would-otherwise-cross-the-header-art';
+    crowded.stats.languagesByYear = {
+      '2024': {
+        typescript: 1000,
+        javascript: 900,
+        vue: 800,
+        snapshot: 700,
+        jsx: 600,
+      },
+    };
+    crowded.stats.topContributors = [
+      { name: 'An Extremely Verbose Maintainer Name', email: 'a@example.com', commits: 200 },
+      { name: 'Another Long Contributor Handle', email: 'b@example.com', commits: 180 },
+      { name: 'Third Contributor With Extra Words', email: 'c@example.com', commits: 160 },
+      { name: 'Fourth Contributor With Extra Words', email: 'd@example.com', commits: 140 },
+      { name: 'Fifth Contributor With Extra Words', email: 'e@example.com', commits: 120 },
+    ];
+    crowded.events[1].evidence = [
+      'tsconfig.json first appeared on 2021-01-15 (packages/a/very/deeply/nested/client/tsconfig.json)',
+    ];
+
+    const svg = renderSvg(crowded);
+    expect(svg).toContain('…');
+    expect(svg).not.toContain(crowded.repo.name);
+    expect(svg).not.toContain('packages/a/very/deeply/nested/client/tsconfig.json');
+  });
 });
 
 describe('wrapText', () => {

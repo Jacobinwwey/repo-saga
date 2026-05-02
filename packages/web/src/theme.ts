@@ -1,5 +1,7 @@
 export type ThemeName = 'epic' | 'dark-fantasy' | 'academic' | 'minimal';
 
+export const THEMES: ThemeName[] = ['epic', 'dark-fantasy', 'academic', 'minimal'];
+
 export const THEME_LABELS: Record<ThemeName, string> = {
   epic: 'Epic',
   'dark-fantasy': 'Dark Fantasy',

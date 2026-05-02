@@ -4,7 +4,8 @@ import { SagaForm } from './components/SagaForm';
 import { ProgressPanel } from './components/ProgressPanel';
 import { SagaView } from './components/SagaView';
 import { Toolbar } from './components/Toolbar';
-import { ThemeName, applyTheme } from './theme';
+import { UI_COPY, localizeError, type UiLang } from './i18n';
+import { applyTheme, type ThemeName } from './theme';
 
 interface JobView {
   id: string;
@@ -16,6 +17,7 @@ interface JobView {
 
 export function App() {
   const [theme, setTheme] = useState<ThemeName>('epic');
+  const [lang, setLang] = useState<UiLang>(() => initialLang());
   const [job, setJob] = useState<JobView | undefined>();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | undefined>();
@@ -25,6 +27,13 @@ export function App() {
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    window.localStorage.setItem('repo-saga-lang', lang);
+  }, [lang]);
+
+  const copy = UI_COPY[lang];
 
   // Fetch initial saga if CLI provided one
   useEffect(() => {
@@ -59,7 +68,7 @@ export function App() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error ?? 'Job creation failed');
+        throw new Error(body?.error ?? copy.errors.jobCreation);
       }
       const data = (await res.json()) as { id: string };
       const newJob: JobView = {
@@ -108,7 +117,7 @@ export function App() {
     try {
       const res = await fetch(`/api/jobs/${jobId}/saga.json`);
       if (!res.ok) {
-        setError('Saga retrieval failed');
+        setError(copy.errors.sagaRetrieval);
         return;
       }
       const saga = (await res.json()) as Saga;
@@ -120,18 +129,18 @@ export function App() {
 
   const downloadSvgUrl = useMemo(() => {
     if (!job?.id || !job?.saga) return undefined;
-    return `/api/jobs/${job.id}/saga.svg?theme=${theme}`;
-  }, [job?.id, job?.saga, theme]);
+    return `/api/jobs/${job.id}/saga.svg?theme=${encodeURIComponent(theme)}&lang=${lang}`;
+  }, [job?.id, job?.saga, theme, lang]);
 
   const downloadJsonUrl = useMemo(() => {
     if (!job?.id || !job?.saga) return undefined;
-    return `/api/jobs/${job.id}/saga.json`;
-  }, [job?.id, job?.saga]);
+    return `/api/jobs/${job.id}/saga.json?lang=${lang}`;
+  }, [job?.id, job?.saga, lang]);
 
   const downloadMdUrl = useMemo(() => {
     if (!job?.id || !job?.saga) return undefined;
-    return `/api/jobs/${job.id}/saga.md`;
-  }, [job?.id, job?.saga]);
+    return `/api/jobs/${job.id}/saga.md?lang=${lang}`;
+  }, [job?.id, job?.saga, lang]);
 
   return (
     <div className="rs-app">
@@ -143,17 +152,17 @@ export function App() {
           </span>
           <span className="rs-brand-text">repo-saga</span>
         </div>
-        <Toolbar theme={theme} onTheme={setTheme} />
+        <Toolbar theme={theme} onTheme={setTheme} lang={lang} onLang={setLang} copy={copy.toolbar} />
       </header>
       <main className="rs-main">
         <section className="rs-input">
-          <SagaForm onSubmit={start} disabled={submitting || job?.status === 'running'} />
-          {error && <div className="rs-error">⚠ {error}</div>}
+          <SagaForm onSubmit={start} disabled={submitting || job?.status === 'running'} copy={copy.form} />
+          {error && <div className="rs-error">⚠ {localizeError(error, lang)}</div>}
         </section>
 
         {job && job.status !== 'done' && (
           <section className="rs-progress">
-            <ProgressPanel events={job.events} status={job.status} />
+            <ProgressPanel events={job.events} status={job.status} lang={lang} copy={copy.progress} />
           </section>
         )}
 
@@ -162,6 +171,9 @@ export function App() {
             <SagaView
               saga={job.saga}
               theme={theme}
+              themeLabel={copy.toolbar.themeLabels[theme]}
+              lang={lang}
+              copy={copy.saga}
               downloadSvgUrl={downloadSvgUrl}
               downloadJsonUrl={downloadJsonUrl}
               downloadMdUrl={downloadMdUrl}
@@ -172,17 +184,13 @@ export function App() {
         {!job && (
           <section className="rs-blurb rs-chronicle-hero">
             <div className="rs-hero-copy">
-              <p className="rs-kicker">A repository chronicle</p>
-              <h2>Render the civilization history of any repository</h2>
-              <p>
-                Paste a GitHub URL or a local path. repo-saga mines git history with heuristic
-                detectors, then turns migrations, refactors, releases, and rituals into an
-                evidence-grounded chronicle.
-              </p>
+              <p className="rs-kicker">{copy.hero.kicker}</p>
+              <h2>{copy.hero.title}</h2>
+              <p>{copy.hero.body}</p>
               <ul>
-                <li>Runs entirely on your machine. No external AI APIs.</li>
-                <li>Outputs Markdown, JSON, and a printable SVG poster.</li>
-                <li>Switch between four chronicle themes.</li>
+                {copy.hero.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
               </ul>
             </div>
             <div className="rs-hero-art" aria-hidden="true" />
@@ -190,8 +198,17 @@ export function App() {
         )}
       </main>
       <footer className="rs-footer">
-        <span>repo-saga · MIT licensed · evidence-first heuristics, no LLMs in the loop</span>
+        <span>{copy.footer}</span>
       </footer>
     </div>
   );
+}
+
+function initialLang(): UiLang {
+  if (typeof window === 'undefined') return 'zh';
+  const query = new URLSearchParams(window.location.search).get('lang');
+  if (query === 'en' || query === 'zh') return query;
+  const stored = window.localStorage.getItem('repo-saga-lang');
+  if (stored === 'en' || stored === 'zh') return stored;
+  return 'zh';
 }

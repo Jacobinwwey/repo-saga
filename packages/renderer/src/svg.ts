@@ -105,7 +105,7 @@ export function renderSvg(saga: Saga, opts: SvgOptions = {}): string {
   const headerH = 300;
   const timelineH = 110;
   const eraH = 240;
-  const footerH = 190;
+  const footerH = 220;
   const eras = saga.eras.length > 0 ? saga.eras : [defaultEra(saga)];
   const totalH = headerH + timelineH + eras.length * eraH + footerH;
   const margin = 32;
@@ -306,13 +306,17 @@ function renderMetricBlock(
   caption: string,
   theme: ThemePalette,
 ): string {
-  const valueSize = value.length > 14 ? 17 : value.length > 8 ? 21 : 27;
+  const valueMaxW = width - 104;
+  const captionMaxW = width - 104;
+  const valueBaseSize = value.length > 14 ? 17 : value.length > 8 ? 21 : 27;
+  const fittedValue = fitTextLine(value, valueBaseSize, valueMaxW, 11);
+  const fittedCaption = fitTextLine(caption, 12, captionMaxW, 9);
   return `
     <g transform="translate(${x} ${y})">
       <path d="M 0 34 q 18 -34 54 -34 h ${width - 108} q 36 0 54 34 q -18 34 -54 34 H 54 q -36 0 -54 -34 Z" fill="${theme.paper}" stroke="${theme.muted}" stroke-width="1.2" opacity="0.82"/>
       ${renderMetricIcon(icon, 34, 34)}
-      <text x="84" y="29" font-family=${attr(theme.fontTitle)} font-size="${valueSize}" font-weight="700" fill="${theme.ink}">${escapeXml(value)}</text>
-      <text x="84" y="50" font-size="12" fill="${theme.muted}" letter-spacing="2">${escapeXml(caption)}</text>
+      <text x="84" y="29" font-family=${attr(theme.fontTitle)} font-size="${fittedValue.fontSize}" font-weight="700" fill="${theme.ink}">${escapeXml(fittedValue.text)}</text>
+      <text x="84" y="50" font-size="${fittedCaption.fontSize}" fill="${theme.muted}" letter-spacing="2">${escapeXml(fittedCaption.text)}</text>
     </g>`;
 }
 
@@ -368,16 +372,20 @@ function renderHeader(
     tags: saga.repo.tagCount,
   });
   const tagline = label(lang, 'posterTagline');
+  const titleMaxW = width - (margin + 230) * 2;
+  const fittedTitle = fitTextLine(title, 48, titleMaxW, 34);
+  const fittedSubtitle = fitTextLine(subtitle, 18, titleMaxW, 13);
+  const fittedTagline = fitTextLine(tagline, 13, 460, 10);
 
   return [
     renderRasterIcon('crest', margin + 42, margin + 16, 122, 140, 0.72),
     renderRasterIcon('oracle', width - margin - 210, margin + 36, 170, 118, 0.7),
     decorationLeft,
     decorationRight,
-    `<text x="${cx}" y="${titleY}" text-anchor="middle" font-family=${attr(theme.fontTitle)} font-size="48" font-weight="700" fill="${theme.ink}" letter-spacing="0.5">${escapeXml(title)}</text>`,
-    `<text x="${cx}" y="${subtitleY}" text-anchor="middle" font-size="18" fill="${theme.inkSoft}">${escapeXml(subtitle)}</text>`,
+    `<text x="${cx}" y="${titleY}" text-anchor="middle" font-family=${attr(theme.fontTitle)} font-size="${fittedTitle.fontSize}" font-weight="700" fill="${theme.ink}" letter-spacing="0.5">${escapeXml(fittedTitle.text)}</text>`,
+    `<text x="${cx}" y="${subtitleY}" text-anchor="middle" font-size="${fittedSubtitle.fontSize}" fill="${theme.inkSoft}">${escapeXml(fittedSubtitle.text)}</text>`,
     renderRasterIcon('ornament', cx - 150, ornamentY + 18, 300, 46, 0.78),
-    `<text x="${cx}" y="${ornamentY + 70}" text-anchor="middle" font-size="13" fill="${theme.muted}" letter-spacing="3">${escapeXml(tagline)}</text>`,
+    `<text x="${cx}" y="${ornamentY + 70}" text-anchor="middle" font-size="${fittedTagline.fontSize}" fill="${theme.muted}" letter-spacing="3">${escapeXml(fittedTagline.text)}</text>`,
   ].join('');
 }
 
@@ -429,8 +437,10 @@ function renderTimelineStrip(
       (ev) => ev.endYear >= era.startYear && ev.startYear <= era.endYear,
     );
     out.push(renderTimelineIcon(pickEraVisual(era, eventsInEra), labelX, trackY - 96));
+    const labelMaxW = Math.max(76, Math.min(150, w / eras.length - 14));
+    const fittedLabel = fitTextLine(eraShortName(localized.name), 11, labelMaxW, 9);
     out.push(
-      `<text x="${labelX}" y="${trackY - 24}" text-anchor="middle" font-size="11" fill="${theme.inkSoft}" font-weight="600">${escapeXml(eraShortName(localized.name))}</text>`,
+      `<text x="${labelX}" y="${trackY - 24}" text-anchor="middle" font-size="${fittedLabel.fontSize}" fill="${theme.inkSoft}" font-weight="600">${escapeXml(fittedLabel.text)}</text>`,
     );
     // era roman numeral below
     out.push(
@@ -503,21 +513,25 @@ function renderEra(
     .filter((ev) => ev.endYear >= era.startYear && ev.startYear <= era.endYear)
     .sort((a, b) => b.score - a.score)
     .slice(0, maxEvents);
-  out.push(renderEraScene(pickEraVisual(era, eventsInEra), cardX + cardW - 270, cardY + 34));
+  const sceneX = cardX + cardW - 270;
+  out.push(renderEraScene(pickEraVisual(era, eventsInEra), sceneX, cardY + 34));
 
   // era name + years
   const nameX = cardX + 130;
   const nameY = cardY + 50;
+  const evX = cardX + cardW * 0.55;
+  const nameMaxW = Math.max(300, evX - nameX - 38);
+  const fittedName = fitTextLine(localized.name, 28, nameMaxW, 20);
+  const fittedTheme = fitTextLine(`${era.startYear}–${era.endYear}  ·  ${localized.theme}`, 14, nameMaxW, 10);
   out.push(
-    `<text x="${nameX}" y="${nameY}" font-family=${attr(theme.fontTitle)} font-size="28" font-weight="700" fill="${theme.ink}">${escapeXml(localized.name)}</text>`,
+    `<text x="${nameX}" y="${nameY}" font-family=${attr(theme.fontTitle)} font-size="${fittedName.fontSize}" font-weight="700" fill="${theme.ink}">${escapeXml(fittedName.text)}</text>`,
   );
   out.push(
-    `<text x="${nameX}" y="${nameY + 26}" font-size="14" fill="${theme.inkSoft}" font-style="italic">${era.startYear}–${era.endYear}  ·  ${escapeXml(localized.theme)}</text>`,
+    `<text x="${nameX}" y="${nameY + 26}" font-size="${fittedTheme.fontSize}" fill="${theme.inkSoft}" font-style="italic">${escapeXml(fittedTheme.text)}</text>`,
   );
 
-  // summary (wrapped) — uses the per-line char budget tuned to the script.
-  const summaryWidth = lang === 'zh' ? 50 : 100;
-  const summaryLines = wrapText(composeEraSummary(era, events, lang), summaryWidth);
+  // summary (wrapped) — bounded by the left column, not just a rough char count.
+  const summaryLines = wrapTextByWidth(composeEraSummary(era, events, lang), nameMaxW, 13, 2);
   for (let i = 0; i < Math.min(2, summaryLines.length); i++) {
     out.push(
       `<text x="${nameX}" y="${nameY + 56 + i * 18}" font-size="13" fill="${theme.ink}">${escapeXml(summaryLines[i])}</text>`,
@@ -525,16 +539,17 @@ function renderEra(
   }
 
   // events list (right column)
-  const evX = cardX + cardW * 0.55;
   const evY = cardY + 30;
+  const evTextMaxW = Math.max(260, sceneX - evX - 30);
 
   out.push(
-    `<text x="${evX}" y="${evY}" font-size="12" fill="${theme.muted}" letter-spacing="2">${escapeXml(label(lang, 'definingEvents'))}</text>`,
+    `<text x="${evX}" y="${evY}" font-size="12" fill="${theme.muted}" letter-spacing="2">${escapeXml(fitTextLine(label(lang, 'definingEvents'), 12, evTextMaxW, 10).text)}</text>`,
   );
   let lineY = evY + 24;
   if (eventsInEra.length === 0) {
+    const quiet = fitTextLine(label(lang, 'quietStretch'), 13, evTextMaxW, 10);
     out.push(
-      `<text x="${evX}" y="${lineY}" font-size="13" fill="${theme.inkSoft}" font-style="italic">${escapeXml(label(lang, 'quietStretch'))}</text>`,
+      `<text x="${evX}" y="${lineY}" font-size="${quiet.fontSize}" fill="${theme.inkSoft}" font-style="italic">${escapeXml(quiet.text)}</text>`,
     );
   } else {
     for (const ev of eventsInEra) {
@@ -542,16 +557,16 @@ function renderEra(
       const range =
         ev.startYear === ev.endYear ? `${ev.startYear}` : `${ev.startYear}–${ev.endYear}`;
       const localizedTitle = translateEventTitle(ev.type, lang);
+      const titleLine = fitTextLine(`${localizedTitle}  · ${range}`, 14, evTextMaxW - 18, 10);
       out.push(dot);
       out.push(
-        `<text x="${evX + 18}" y="${lineY}" font-size="14" font-weight="600" fill="${theme.ink}">${escapeXml(localizedTitle)} <tspan fill="${theme.muted}" font-weight="400">  · ${range}</tspan></text>`,
+        `<text x="${evX + 18}" y="${lineY}" font-size="${titleLine.fontSize}" font-weight="600" fill="${theme.ink}">${escapeXml(titleLine.text)}</text>`,
       );
       const hintRaw = ev.evidence[0] ?? ev.narrative;
       const hint = translateEvidence(hintRaw, lang);
-      const hintWidth = lang === 'zh' ? 36 : 70;
-      const hintLines = wrapText(hint, hintWidth);
+      const hintLine = fitTextLine(hint, 11, evTextMaxW - 18, 9);
       out.push(
-        `<text x="${evX + 18}" y="${lineY + 16}" font-size="11" fill="${theme.inkSoft}">${escapeXml(hintLines[0] ?? '')}</text>`,
+        `<text x="${evX + 18}" y="${lineY + 16}" font-size="${hintLine.fontSize}" fill="${theme.inkSoft}">${escapeXml(hintLine.text)}</text>`,
       );
       lineY += 36;
       if (lineY > cardY + cardH - 24) break;
@@ -596,6 +611,15 @@ function renderFooter(
   const metricW = 210;
   const totalMetricW = metricW * 4 + gap * 3;
   const startX = cx - totalMetricW / 2;
+  const captions =
+    lang === 'zh'
+      ? { commits: '提交', contributors: '贡献者', tags: 'TAG', topLanguages: '主要语言' }
+      : {
+          commits: 'COMMITS',
+          contributors: 'CONTRIBUTORS',
+          tags: 'TAGS',
+          topLanguages: 'TOP LANGUAGES',
+        };
   out.push(
     renderMetricBlock(
       startX,
@@ -603,7 +627,7 @@ function renderFooter(
       metricW,
       'quill',
       saga.repo.commitCount.toLocaleString(),
-      'COMMITS',
+      captions.commits,
       theme,
     ),
   );
@@ -614,7 +638,7 @@ function renderFooter(
       metricW,
       'people',
       saga.repo.contributors.toLocaleString(),
-      'CONTRIBUTORS',
+      captions.contributors,
       theme,
     ),
   );
@@ -625,7 +649,7 @@ function renderFooter(
       metricW,
       'tag',
       saga.repo.tagCount.toLocaleString(),
-      'TAGS',
+      captions.tags,
       theme,
     ),
   );
@@ -636,7 +660,7 @@ function renderFooter(
       metricW,
       'laurel',
       topLangsList || '—',
-      'TOP LANGUAGES',
+      captions.topLanguages,
       theme,
     ),
   );
@@ -646,15 +670,26 @@ function renderFooter(
     const text = top
       .map((c) => `${c.name || c.email} (${c.commits.toLocaleString()})`)
       .join('  ·  ');
+    const stewards = fitTextLine(label(lang, 'stewards', { value: text }), 13, width - margin * 4, 10);
     out.push(
-      `<text x="${cx}" y="${y + 148}" text-anchor="middle" font-size="13" fill="${theme.inkSoft}">${escapeXml(label(lang, 'stewards', { value: text }))}</text>`,
+      `<text x="${cx}" y="${y + 156}" text-anchor="middle" font-size="${stewards.fontSize}" fill="${theme.inkSoft}">${escapeXml(stewards.text)}</text>`,
     );
   }
+  const topLanguagesLine = fitTextLine(label(lang, 'topLanguages', { value: topLangsList || '—' }), 12, width - margin * 4, 10);
   out.push(
-    `<text x="${cx}" y="${y + 126}" text-anchor="middle" font-size="12" fill="${theme.muted}" opacity="0.9">${escapeXml(label(lang, 'topLanguages', { value: topLangsList || '—' }))}</text>`,
+    `<text x="${cx}" y="${y + 132}" text-anchor="middle" font-size="${topLanguagesLine.fontSize}" fill="${theme.muted}" opacity="0.9">${escapeXml(topLanguagesLine.text)}</text>`,
+  );
+  const posterFooter = fitTextLine(
+    label(lang, 'posterFooter', {
+      version: saga.meta.generatorVersion,
+      date: saga.repo.analyzedAt.slice(0, 10),
+    }),
+    11,
+    width - margin * 4,
+    9,
   );
   out.push(
-    `<text x="${cx}" y="${y + footerH - 16}" text-anchor="middle" font-size="11" fill="${theme.muted}" letter-spacing="3">${escapeXml(label(lang, 'posterFooter', { version: saga.meta.generatorVersion, date: saga.repo.analyzedAt.slice(0, 10) }))}</text>`,
+    `<text x="${cx}" y="${y + footerH - 34}" text-anchor="middle" font-size="${posterFooter.fontSize}" fill="${theme.muted}" letter-spacing="3">${escapeXml(posterFooter.text)}</text>`,
   );
   return out.join('');
 }
@@ -718,6 +753,125 @@ function toRoman(n: number): string {
     }
   }
   return out;
+}
+
+function fitTextLine(
+  input: string,
+  fontSize: number,
+  maxWidth: number,
+  minFontSize = fontSize,
+): { text: string; fontSize: number } {
+  let size = fontSize;
+  const text = String(input ?? '');
+  while (size > minFontSize && estimateTextWidth(text, size) > maxWidth) {
+    size -= 1;
+  }
+  return {
+    text: truncateTextToWidth(text, size, maxWidth),
+    fontSize: size,
+  };
+}
+
+function wrapTextByWidth(
+  input: string,
+  maxWidth: number,
+  fontSize: number,
+  maxLines = Number.POSITIVE_INFINITY,
+): string[] {
+  const text = String(input ?? '').trim();
+  if (!text) return [];
+
+  const tokens = text.includes(' ') ? text.split(/\s+/).filter(Boolean) : Array.from(text);
+  const lines: string[] = [];
+  let line = '';
+  let truncated = false;
+
+  const pushLine = (value: string) => {
+    if (!value) return;
+    lines.push(value);
+  };
+
+  for (const token of tokens) {
+    if (lines.length >= maxLines) {
+      truncated = true;
+      break;
+    }
+    const separator = line && text.includes(' ') ? ' ' : '';
+    const candidate = `${line}${separator}${token}`;
+    if (estimateTextWidth(candidate, fontSize) <= maxWidth) {
+      line = candidate;
+      continue;
+    }
+
+    pushLine(line);
+    line = '';
+    if (lines.length >= maxLines) {
+      truncated = true;
+      break;
+    }
+
+    if (estimateTextWidth(token, fontSize) <= maxWidth) {
+      line = token;
+      continue;
+    }
+
+    let chunk = '';
+    for (const char of Array.from(token)) {
+      const chunkCandidate = `${chunk}${char}`;
+      if (estimateTextWidth(chunkCandidate, fontSize) <= maxWidth) {
+        chunk = chunkCandidate;
+      } else {
+        pushLine(chunk);
+        chunk = char;
+        if (lines.length >= maxLines) {
+          truncated = true;
+          break;
+        }
+      }
+    }
+    line = chunk;
+  }
+
+  if (lines.length < maxLines) pushLine(line);
+  if (lines.length > maxLines) lines.length = maxLines;
+  if (truncated && lines.length > 0) {
+    lines[lines.length - 1] = truncateTextToWidth(`${lines[lines.length - 1]}…`, fontSize, maxWidth);
+  }
+  return lines.map((line) => truncateTextToWidth(line, fontSize, maxWidth));
+}
+
+function truncateTextToWidth(input: string, fontSize: number, maxWidth: number): string {
+  const raw = String(input ?? '');
+  if (estimateTextWidth(raw, fontSize) <= maxWidth) return raw;
+  const ellipsis = '…';
+  const text = raw.endsWith(ellipsis) ? raw.slice(0, -1).trimEnd() : raw;
+  const ellipsisWidth = estimateTextWidth(ellipsis, fontSize);
+  if (ellipsisWidth >= maxWidth) return ellipsis;
+
+  let out = '';
+  for (const char of Array.from(text)) {
+    const candidate = `${out}${char}`;
+    if (estimateTextWidth(candidate, fontSize) + ellipsisWidth > maxWidth) break;
+    out = candidate;
+  }
+  return `${out.trimEnd()}${ellipsis}`;
+}
+
+function estimateTextWidth(input: string, fontSize: number): number {
+  let width = 0;
+  for (const char of Array.from(String(input ?? ''))) {
+    width += estimateGlyphWidth(char, fontSize);
+  }
+  return width;
+}
+
+function estimateGlyphWidth(char: string, fontSize: number): number {
+  if (/\s/.test(char)) return fontSize * 0.32;
+  if (/[\u2e80-\u9fff\uff00-\uffef]/.test(char)) return fontSize;
+  if (/[A-Z0-9]/.test(char)) return fontSize * 0.62;
+  if (/[mw@#%&]/.test(char)) return fontSize * 0.78;
+  if (/[ilI.,:;|]/.test(char)) return fontSize * 0.32;
+  return fontSize * 0.54;
 }
 
 export function wrapText(input: string, charsPerLine: number): string[] {

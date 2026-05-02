@@ -508,13 +508,19 @@ const ENGLISH_TITLE_TO_TYPE: Record<string, EventType> = {
 
 export function translateSaga(saga: Saga, lang: Lang): Saga {
   if (lang === 'en') return saga;
-  const events = saga.events.map((e) => translateEvent(e, lang));
-  const eraEventLookup = new Map(events.map((e) => [e.id, e]));
+  const events = saga.events.map((e) => ({
+    ...translateEvent(e, lang),
+    evidence: e.evidence.map((item) => translateEvidence(item, lang)),
+  }));
   const eras = saga.eras.map((era) => {
     const { name, theme } = translateEra(era, saga.events, lang);
-    // Keep era.summary / evidence untranslated for now (dynamic strings).
-    return { ...era, name, theme };
+    return {
+      ...era,
+      name,
+      theme,
+      summary: composeEraSummary(era, saga.events, lang),
+      evidence: era.evidence.map((item) => translateEvidence(item, lang)),
+    };
   });
-  void eraEventLookup;
   return { ...saga, eras, events };
 }

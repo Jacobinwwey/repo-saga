@@ -59,6 +59,11 @@ describe('initial saga server routes', () => {
       expect(jobJson.statusCode).toBe(200);
       expect(JSON.parse(jobJson.body).repo.name).toBe('demo');
 
+      const zhJobJson = await server.app.inject({ method: 'GET', url: '/api/jobs/initial/saga.json?lang=zh' });
+      expect(zhJobJson.statusCode).toBe(200);
+      expect(JSON.parse(zhJobJson.body).eras[0].name).toContain('开端纪元');
+      expect(JSON.parse(zhJobJson.body).eras[0].summary).toContain('次提交');
+
       const markdown = await server.app.inject({ method: 'GET', url: '/api/jobs/initial/saga.md' });
       expect(markdown.statusCode).toBe(200);
       expect(markdown.headers['content-type']).toContain('text/markdown');

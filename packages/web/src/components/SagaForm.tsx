@@ -1,8 +1,10 @@
 import { FormEvent, useState } from 'react';
+import type { UiCopy } from '../i18n';
 
 interface Props {
   onSubmit: (source: string) => void;
   disabled?: boolean;
+  copy: UiCopy['form'];
 }
 
 const EXAMPLES = [
@@ -11,7 +13,7 @@ const EXAMPLES = [
   './my-project',
 ];
 
-export function SagaForm({ onSubmit, disabled }: Props) {
+export function SagaForm({ onSubmit, disabled, copy }: Props) {
   const [value, setValue] = useState('');
 
   function handle(e: FormEvent) {
@@ -24,7 +26,7 @@ export function SagaForm({ onSubmit, disabled }: Props) {
   return (
     <form onSubmit={handle} className="rs-form">
       <label className="rs-form-label" htmlFor="rs-source">
-        Repository URL or local path
+        {copy.label}
       </label>
       <div className="rs-form-row">
         <input
@@ -32,17 +34,17 @@ export function SagaForm({ onSubmit, disabled }: Props) {
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="https://github.com/user/repo  or  /Users/me/projects/foo"
+          placeholder={copy.placeholder}
           spellCheck={false}
           autoComplete="off"
           disabled={disabled}
         />
         <button type="submit" disabled={disabled || !value.trim()}>
-          {disabled ? 'Working…' : 'Generate'}
+          {disabled ? copy.working : copy.generate}
         </button>
       </div>
       <div className="rs-form-hint">
-        Try one of:
+        {copy.examplesPrefix}
         {EXAMPLES.map((ex) => (
           <button
             type="button"
