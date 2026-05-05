@@ -192,7 +192,9 @@ describe('renderer i18n coverage', () => {
 
     expect(norwegianSvg).not.toContain('The Civilization of');
     expect(norwegianSvg).not.toContain('Settler Era');
+    expect(norwegianSvg).not.toContain('Empire');
     expect(greekSvg).not.toContain('Late Era: Maturity Sets In');
     expect(greekSvg).not.toContain('Bug Plague');
+    expect(greekSvg).not.toContain('Empire');
   });
 });

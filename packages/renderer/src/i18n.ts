@@ -201,20 +201,30 @@ const EVENT_TITLES_ZH_HANT: Record<EventType, string> = {
 const LOCALE_EVENT_TITLE_OVERRIDES: Partial<Record<SupportedLang, Partial<Record<EventType, string>>>> = {
   da: {
     'linting-theocracy': 'Linting-teokratiet',
+    'release-empire': 'Udgivelsesimperiet',
   },
   el: {
     'great-refactor-war': 'Ο Μεγάλος Πόλεμος Αναδόμησης',
     'linting-theocracy': 'Θεοκρατία του Linting',
     'bug-plague': 'Πανούκλα Σφαλμάτων',
+    'release-empire': 'Αυτοκρατορία Κυκλοφοριών',
   },
   fi: {
     'typescript-invasion': 'TypeScriptin invaasio',
+    'release-empire': 'Julkaisuimperiumi',
+  },
+  fr: {
+    'release-empire': 'Empire des publications',
   },
   hu: {
     'release-empire': 'Kiadási Birodalom',
   },
+  no: {
+    'release-empire': 'Utgivelsesimperiet',
+  },
   sv: {
     'typescript-invasion': 'TypeScript-invasion',
+    'release-empire': 'Utgivningsimperiet',
   },
   th: {
     'linting-theocracy': 'เทวาธิปไตยแห่ง Linting',
