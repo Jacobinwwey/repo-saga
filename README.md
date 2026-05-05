@@ -143,6 +143,9 @@ Running `repo-saga` (no args) launches a local Fastify server (random port) and 
 - Paste a repo URL or local path → click **Generate**
 - Live progress events stream over Server-Sent Events
 - See eras as cards; click one to view its events with full evidence
+- **Time-travel slider** — drag to any day in the repo's life and watch the active files, top contributors, and in-flight detector events for the ±30-day window snap into focus; the matching era highlights as you scrub
+- **Contributor perspective** — pick a contributor to re-read overlapping events in their voice ("you joined in 2018…"), and see which files they touched most
+- **Why did this fire?** — every event card has a debug panel listing the positive rule the detector matched and the metric values vs. their thresholds
 - Switch themes (`epic` / `dark-fantasy` / `academic` / `minimal`)
 - Download the SVG, copy the Markdown, view the JSON
 
@@ -255,7 +258,6 @@ pnpm --filter @repo-saga/web run dev
 - More themes (newspaper, blueprint, comic)
 - Multi-repo "civilizations meet" comparisons
 - HTML poster export for printing
-- "Why did this event fire?" debug panel in the UI
 - Support hg / fossil via the same heuristic core
 - Optional AI re-write of narrative copy (opt-in flag, BYO key)
 

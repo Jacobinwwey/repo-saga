@@ -144,6 +144,9 @@ pnpm --filter repo-saga link --global
 - 粘贴仓库 URL 或本地路径，点击 **Generate**
 - 进度事件通过 Server-Sent Events 实时推送
 - 纪元以卡片呈现，点开可看到对应事件及其完整证据
+- **时间旅行滑块** —— 拖到仓库生命中的任意一天，对应 ±30 天窗口里的活跃文件、核心贡献者、正在发生的 detector 事件会同步更新；当前所属纪元自动高亮
+- **角色视角** —— 选一个贡献者，与其时间线重叠的事件会被改写为 ta 的口吻（"你在 2018 年加入……"），并显示 ta 改得最多的文件
+- **"为什么触发？"** —— 每个事件卡都带一个调试面板，列出 detector 命中的判据规则，以及关键指标与阈值的对比
 - 切换主题（`epic` / `dark-fantasy` / `academic` / `minimal`）
 - 下载 SVG、复制 Markdown、查看 JSON
 
@@ -256,7 +259,6 @@ pnpm --filter @repo-saga/web run dev
 - 更多主题（newspaper、blueprint、comic）
 - 跨仓库的"文明相遇"对比
 - HTML 海报导出（便于打印）
-- UI 中加入"为什么这个事件被触发？"的调试面板
 - 通过相同的启发式核心支持 hg / fossil
 - 可选的 AI 重写叙事文案（默认关闭，自带 key）
 
