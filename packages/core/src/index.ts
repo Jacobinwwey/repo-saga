@@ -10,7 +10,7 @@ import {
   resolveSource,
 } from './git.js';
 import { ALL_DETECTORS, runDetectors } from './detectors.js';
-import { groupIntoEras } from './eras.js';
+import { groupIntoEras, mapEventsToTimeline } from './eras.js';
 import type {
   AnalyzeOptions,
   AnalyzedRepo,
@@ -85,6 +85,13 @@ export async function generateSaga(input: string, opts: AnalyzeOptions = {}): Pr
 
   emit(onProgress, { phase: 'rendering', message: 'Compiling saga…', progress: 0.95 });
   const stats = buildSagaStats(analyzed, events);
+  const timelineGranularity = opts.timelineGranularity ?? 'year';
+  const renderedEvents = mapEventsToTimeline(
+    analyzed,
+    events,
+    timelineGranularity,
+    opts.bucketDays,
+  );
 
   const saga: Saga = {
     schemaVersion: 1,
@@ -92,10 +99,10 @@ export async function generateSaga(input: string, opts: AnalyzeOptions = {}): Pr
       ...analyzed.repo,
       firstPeriodLabel: eras[0]?.displayStartLabel,
       lastPeriodLabel: eras[eras.length - 1]?.displayEndLabel,
-      timelineGranularity: opts.timelineGranularity ?? 'year',
+      timelineGranularity,
     },
     eras,
-    events,
+    events: renderedEvents,
     stats,
     meta: {
       generator: SAGA_GENERATOR_NAME,

@@ -226,6 +226,10 @@ export interface Era {
   name: string;
   startYear: number;
   endYear: number;
+  /** optional real start date for this era when using non-year timeline slicing */
+  startDate?: string;
+  /** optional real end date for this era when using non-year timeline slicing */
+  endDate?: string;
   /** optional display label used instead of startYear for rendered ranges */
   displayStartLabel?: string;
   /** optional display label used instead of endYear for rendered ranges */
