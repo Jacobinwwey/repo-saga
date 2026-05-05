@@ -193,6 +193,42 @@ describe('renderSvg', () => {
     expect(svg).not.toContain(crowded.repo.name);
     expect(svg).not.toContain('packages/a/very/deeply/nested/client/tsconfig.json');
   });
+
+  it('renders display period labels in the header, timeline, and event cards', () => {
+    const quarterly = JSON.parse(JSON.stringify(fixture)) as Saga;
+    quarterly.repo.firstPeriodLabel = '2024 Q1';
+    quarterly.repo.lastPeriodLabel = '2024 Q3';
+    quarterly.repo.firstCommitDate = '2024-01-03T08:00:00Z';
+    quarterly.repo.lastCommitDate = '2024-09-29T18:00:00Z';
+    quarterly.eras = quarterly.eras.map((era, index) => ({
+      ...era,
+      startYear: 2001 + index,
+      endYear: 2001 + index,
+      startDate: `2024-0${index * 3 + 1}-01`,
+      endDate: `2024-0${index * 3 + 3}-30`,
+      displayStartLabel: `2024 Q${index + 1}`,
+      displayEndLabel: `2024 Q${index + 1}`,
+    }));
+    quarterly.events = quarterly.events.map((event, index) => ({
+      ...event,
+      startYear: 2001 + index,
+      endYear: 2001 + index,
+      displayStartLabel: `2024 Q${index + 1}`,
+      displayEndLabel: `2024 Q${index + 1}`,
+    }));
+
+    const svg = renderSvg(quarterly);
+    expect(svg).toContain('2024 Q1 — 2024 Q3');
+    expect(svg).toContain('2024 Q1');
+    expect(svg).toContain('2024 Q2');
+    expect(svg).toContain('TypeScript Invasion  · 2024 Q2');
+    expect(svg).not.toContain('2001–2001');
+
+    const timelineBandMatches = [...svg.matchAll(/<rect x="([^"]+)" y="345" width="([^"]+)" height="20" fill="[^"]+" opacity="0\.25" \/>/g)];
+    const timelineBandXs = timelineBandMatches.map((match) => Number.parseFloat(match[1]));
+    expect(new Set(timelineBandXs).size).toBeGreaterThan(1);
+    expect(timelineBandXs).toEqual([...timelineBandXs].sort((left, right) => left - right));
+  });
 });
 
 describe('wrapText', () => {

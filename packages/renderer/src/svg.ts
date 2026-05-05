@@ -364,8 +364,9 @@ function renderHeader(
   const decorationRight = `<path d="M ${width - margin - 370} ${ornamentY} q 60 -30 120 0 q 60 30 120 0 q 60 -30 120 0" stroke="${theme.muted}" stroke-width="1.4" fill="none"/>`;
 
   const title = label(lang, 'civilizationOf', { name: saga.repo.name });
+  const repoPeriod = displayRepoPeriod(saga);
   const subtitle = label(lang, 'poster_subtitle', {
-    period: `${shortYear(saga.repo.firstCommitDate)} — ${shortYear(saga.repo.lastCommitDate)}`,
+    period: repoPeriod,
     commits: saga.repo.commitCount.toLocaleString(),
     contributors: saga.repo.contributors,
     tags: saga.repo.tagCount,
@@ -401,27 +402,19 @@ function renderTimelineStrip(
   const x0 = margin + 60;
   const x1 = width - margin - 60;
   const w = x1 - x0;
-  const startYear = yearOf(saga.repo.firstCommitDate);
-  const endYear = yearOf(saga.repo.lastCommitDate);
-  const displaySpanYears = Math.max(1, endYear - startYear);
-  const axisEndYear = endYear + 1;
-  const axisSpanYears = Math.max(1, axisEndYear - startYear);
-  const scaleYear = (year: number) =>
-    x0 + ((Math.min(axisEndYear, Math.max(startYear, year)) - startYear) / axisSpanYears) * w;
+  const scale = createTimelineScale(saga, eras, x0, x1);
 
   const trackY = startY + height / 2;
   const out: string[] = [];
 
-  // baseline
   out.push(
     `<line x1="${x0}" y1="${trackY}" x2="${x1}" y2="${trackY}" stroke="${theme.inkSoft}" stroke-width="1.2"/>`,
   );
 
-  // era segments as colored arcs
   for (let i = 0; i < eras.length; i++) {
     const era = eras[i];
-    const ex0 = scaleYear(era.startYear);
-    const exEnd = scaleYear(era.endYear + 1);
+    const ex0 = scale.start(era);
+    const exEnd = scale.end(era);
     const color = theme.eraColors[i % theme.eraColors.length];
     out.push(
       `<rect x="${ex0}" y="${trackY - 10}" width="${Math.max(2, exEnd - ex0)}" height="20" fill="${color}" opacity="0.25" />`,
@@ -429,7 +422,6 @@ function renderTimelineStrip(
     out.push(
       `<rect x="${ex0}" y="${trackY - 4}" width="${Math.max(2, exEnd - ex0)}" height="8" fill="${color}" opacity="0.85" />`,
     );
-    // era label above
     const labelX = Math.min(x1 - 86, Math.max(x0 + 86, (ex0 + exEnd) / 2));
     const localized = translateEra(era, saga.events, lang);
     const eventsInEra = saga.events.filter(
@@ -441,34 +433,43 @@ function renderTimelineStrip(
     out.push(
       `<text x="${labelX}" y="${trackY - 24}" text-anchor="middle" font-size="${fittedLabel.fontSize}" fill="${theme.inkSoft}" font-weight="600">${escapeXml(fittedLabel.text)}</text>`,
     );
-    // era roman numeral below
     out.push(
       `<text x="${labelX}" y="${trackY + 26}" text-anchor="middle" font-size="10" fill="${theme.muted}" letter-spacing="2">${toRoman(i + 1)}</text>`,
     );
   }
 
-  // year ticks: start with the requested density, then dedupe so labels never
-  // collide. Two safeguards: (a) drop a tick if its year duplicates the
-  // previous tick's year (Math.round can yield runs like 2020,2020,2021);
-  // (b) drop a tick if it lands within ~28px of the previous label, which
-  // keeps adjacent years like "2020 2021" from kissing.
-  const requested = Math.min(8, Math.max(2, displaySpanYears + 1));
-  const minLabelGap = 28;
-  let lastYear = -Infinity;
-  let lastX = -Infinity;
-  for (let i = 0; i < requested; i++) {
-    const yearAtTick = startYear + Math.round((i / (requested - 1)) * displaySpanYears);
-    const tx = scaleYear(yearAtTick);
-    if (yearAtTick === lastYear) continue;
-    if (tx - lastX < minLabelGap) continue;
-    lastYear = yearAtTick;
-    lastX = tx;
-    out.push(
-      `<line x1="${tx}" y1="${trackY + 10}" x2="${tx}" y2="${trackY + 16}" stroke="${theme.inkSoft}" stroke-width="1"/>`,
-    );
-    out.push(
-      `<text x="${tx}" y="${trackY + 46}" text-anchor="middle" font-size="11" fill="${theme.inkSoft}">${yearAtTick}</text>`,
-    );
+  if (scale.mode === 'date') {
+    const ticks = uniqueTickLabels([
+      { label: saga.repo.firstPeriodLabel ?? eraBoundaryLabel(eras[0], 'displayStartLabel'), x: x0 },
+      { label: saga.repo.lastPeriodLabel ?? eraBoundaryLabel(eras[eras.length - 1], 'displayEndLabel'), x: x1 },
+    ]);
+    for (const tick of ticks) {
+      out.push(
+        `<line x1="${tick.x}" y1="${trackY + 10}" x2="${tick.x}" y2="${trackY + 16}" stroke="${theme.inkSoft}" stroke-width="1"/>`,
+      );
+      out.push(
+        `<text x="${tick.x}" y="${trackY + 46}" text-anchor="middle" font-size="11" fill="${theme.inkSoft}">${escapeXml(tick.label)}</text>`,
+      );
+    }
+  } else {
+    const requested = Math.min(8, Math.max(2, scale.displaySpan + 1));
+    const minLabelGap = 28;
+    let lastYear = -Infinity;
+    let lastX = -Infinity;
+    for (let i = 0; i < requested; i++) {
+      const yearAtTick = scale.startYear + Math.round((i / (requested - 1)) * scale.displaySpan);
+      const tx = scale.positionForYear(yearAtTick);
+      if (yearAtTick === lastYear) continue;
+      if (tx - lastX < minLabelGap) continue;
+      lastYear = yearAtTick;
+      lastX = tx;
+      out.push(
+        `<line x1="${tx}" y1="${trackY + 10}" x2="${tx}" y2="${trackY + 16}" stroke="${theme.inkSoft}" stroke-width="1"/>`,
+      );
+      out.push(
+        `<text x="${tx}" y="${trackY + 46}" text-anchor="middle" font-size="11" fill="${theme.inkSoft}">${yearAtTick}</text>`,
+      );
+    }
   }
   return out.join('');
 }
@@ -515,13 +516,13 @@ function renderEra(
   const sceneX = cardX + cardW - 270;
   out.push(renderEraScene(pickEraVisual(era, eventsInEra), sceneX, cardY + 34));
 
-  // era name + years
+  // era name + period
   const nameX = cardX + 130;
   const nameY = cardY + 50;
   const evX = cardX + cardW * 0.55;
   const nameMaxW = Math.max(300, evX - nameX - 38);
   const fittedName = fitTextLine(localized.name, 28, nameMaxW, 20);
-  const fittedTheme = fitTextLine(`${era.startYear}–${era.endYear}  ·  ${localized.theme}`, 14, nameMaxW, 10);
+  const fittedTheme = fitTextLine(`${displayEraPeriod(era)}  ·  ${localized.theme}`, 14, nameMaxW, 10);
   out.push(
     `<text x="${nameX}" y="${nameY}" font-family=${attr(theme.fontTitle)} font-size="${fittedName.fontSize}" font-weight="700" fill="${theme.ink}">${escapeXml(fittedName.text)}</text>`,
   );
@@ -553,8 +554,7 @@ function renderEra(
   } else {
     for (const ev of eventsInEra) {
       const dot = `<circle cx="${evX + 6}" cy="${lineY - 4}" r="5" fill="${color}" stroke="${theme.ink}" stroke-width="0.6"/>`;
-      const range =
-        ev.startYear === ev.endYear ? `${ev.startYear}` : `${ev.startYear}–${ev.endYear}`;
+      const range = displayEventPeriod(ev);
       const localizedTitle = translateEventTitle(ev.type, lang);
       const titleLine = fitTextLine(`${localizedTitle}  · ${range}`, 14, evTextMaxW - 18, 10);
       out.push(dot);
@@ -711,6 +711,30 @@ function shortYear(iso: string): string {
   return String(d.getUTCFullYear());
 }
 
+function displayRepoPeriod(saga: Saga): string {
+  const start = saga.repo.firstPeriodLabel ?? shortYear(saga.repo.firstCommitDate);
+  const end = saga.repo.lastPeriodLabel ?? shortYear(saga.repo.lastCommitDate);
+  return start === end ? start : `${start} — ${end}`;
+}
+
+function displayEraPeriod(era: Era): string {
+  const start = eraBoundaryLabel(era, 'displayStartLabel') ?? `${era.startYear}`;
+  const end = eraBoundaryLabel(era, 'displayEndLabel') ?? `${era.endYear}`;
+  return start === end ? start : `${start}–${end}`;
+}
+
+function displayEventPeriod(
+  event: DetectedEvent & Partial<Record<'displayStartLabel' | 'displayEndLabel', string>>,
+): string {
+  const start = event.displayStartLabel ?? `${event.startYear}`;
+  const end = event.displayEndLabel ?? `${event.endYear}`;
+  return start === end ? start : `${start}–${end}`;
+}
+
+function eraBoundaryLabel(era: Era, key: 'displayStartLabel' | 'displayEndLabel'): string | undefined {
+  return (era as Era & Partial<Record<'displayStartLabel' | 'displayEndLabel', string>>)[key];
+}
+
 function yearOf(iso: string): number {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return new Date().getFullYear();
@@ -749,6 +773,96 @@ function toRoman(n: number): string {
     }
   }
   return out;
+}
+
+type TimelineScale =
+  | {
+      mode: 'date';
+      start: (era: Era) => number;
+      end: (era: Era) => number;
+    }
+  | {
+      mode: 'year';
+      start: (era: Era) => number;
+      end: (era: Era) => number;
+      startYear: number;
+      displaySpan: number;
+      positionForYear: (year: number) => number;
+    };
+
+const DAY_MS = 86_400_000;
+
+function createTimelineScale(saga: Saga, eras: Era[], x0: number, x1: number): TimelineScale {
+  const w = x1 - x0;
+  const datedBounds = eras
+    .map((era) => {
+      const start = parseDateStartMs(era.startDate);
+      const endExclusive = parseDateExclusiveEndMs(era.endDate);
+      if (!Number.isFinite(start) || !Number.isFinite(endExclusive)) return undefined;
+      return { era, start, endExclusive };
+    })
+    .filter((entry): entry is { era: Era; start: number; endExclusive: number } => Boolean(entry));
+
+  if (datedBounds.length === eras.length && datedBounds.length > 0) {
+    const axisStart = Math.min(...datedBounds.map((entry) => entry.start));
+    const axisEnd = Math.max(...datedBounds.map((entry) => entry.endExclusive));
+    const axisSpan = Math.max(DAY_MS, axisEnd - axisStart);
+    const scaleDate = (value: number) =>
+      x0 + ((Math.min(axisEnd, Math.max(axisStart, value)) - axisStart) / axisSpan) * w;
+    const boundsByEra = new Map(datedBounds.map((entry) => [entry.era.id, entry] as const));
+    return {
+      mode: 'date',
+      start: (era) => scaleDate(boundsByEra.get(era.id)?.start ?? axisStart),
+      end: (era) => scaleDate(boundsByEra.get(era.id)?.endExclusive ?? axisEnd),
+    };
+  }
+
+  const startYear = yearOf(saga.repo.firstCommitDate);
+  const endYear = yearOf(saga.repo.lastCommitDate);
+  const displaySpan = Math.max(1, endYear - startYear);
+  const axisEndYear = endYear + 1;
+  const axisSpanYears = Math.max(1, axisEndYear - startYear);
+  const scaleYear = (year: number) =>
+    x0 + ((Math.min(axisEndYear, Math.max(startYear, year)) - startYear) / axisSpanYears) * w;
+  return {
+    mode: 'year',
+    start: (era) => scaleYear(era.startYear),
+    end: (era) => scaleYear(era.endYear + 1),
+    startYear,
+    displaySpan,
+    positionForYear: scaleYear,
+  };
+}
+
+function parseDateStartMs(value?: string): number {
+  if (!value) return Number.NaN;
+  const normalized = normalizeDateLabel(value);
+  return normalized ? Date.parse(`${normalized}T00:00:00Z`) : Number.NaN;
+}
+
+function parseDateExclusiveEndMs(value?: string): number {
+  const startMs = parseDateStartMs(value);
+  return Number.isFinite(startMs) ? startMs + DAY_MS : Number.NaN;
+}
+
+function normalizeDateLabel(value: string): string | undefined {
+  const match = String(value).match(/^(\d{4}-\d{2}-\d{2})/);
+  return match?.[1];
+}
+
+function uniqueTickLabels(
+  ticks: Array<{ label?: string; x: number }>,
+): Array<{ label: string; x: number }> {
+  const seen = new Set<string>();
+  const output: Array<{ label: string; x: number }> = [];
+  for (const tick of ticks) {
+    if (!tick.label) continue;
+    const key = `${tick.label}:${tick.x}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    output.push({ label: tick.label, x: tick.x });
+  }
+  return output;
 }
 
 function fitTextLine(
