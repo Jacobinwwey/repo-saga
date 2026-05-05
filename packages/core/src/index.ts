@@ -3,6 +3,7 @@ import {
   defaultCacheDir,
   deriveRepoName,
   isRemoteUrl,
+  readPreferredRepoName,
   readBranches,
   readDefaultBranch,
   readGitLog,
@@ -60,7 +61,7 @@ export async function generateSaga(input: string, opts: AnalyzeOptions = {}): Pr
   const defaultBranch = await readDefaultBranch(resolved.resolvedPath, opts.gitBin);
 
   emit(onProgress, { phase: 'analysing', message: 'Aggregating yearly stats…', progress: 0.55 });
-  const repoName = deriveRepoName(input);
+  const repoName = await readPreferredRepoName(resolved.resolvedPath, input, opts.gitBin);
   const analyzed = buildAnalyzedRepo({
     repoName,
     source: input,
@@ -544,6 +545,7 @@ export {
   deriveRepoName,
   groupIntoEras,
   isRemoteUrl,
+  readPreferredRepoName,
   readBranches,
   readDefaultBranch,
   readGitLog,

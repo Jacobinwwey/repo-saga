@@ -5,7 +5,7 @@
  */
 
 export interface RepoSource {
-  /** human-friendly project name (last path segment) */
+  /** human-friendly project name, preferring the git remote basename when available */
   name: string;
   /** original URL or local path the user supplied */
   source: string;

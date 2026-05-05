@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { chmod, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import * as os from 'node:os';
@@ -8,6 +9,7 @@ import {
   isRemoteUrl,
   parseGitLog,
   parseNumstatLine,
+  readPreferredRepoName,
   resolveSource,
 } from '../src/git.js';
 
@@ -38,6 +40,19 @@ describe('deriveRepoName', () => {
   it('handles local paths', () => {
     expect(deriveRepoName('/Users/me/work/foo')).toBe('foo');
     expect(deriveRepoName('./foo')).toBe('foo');
+  });
+});
+
+describe('readPreferredRepoName', () => {
+  it('prefers the origin remote basename for local repositories', async () => {
+    const repoDir = await mkdtemp(path.join(os.tmpdir(), 'repo-saga-name-'));
+    execFileSync('git', ['init'], { cwd: repoDir, stdio: 'pipe' });
+    execFileSync('git', ['remote', 'add', 'origin', 'https://github.com/teee32/obsidian-NoteMD.git'], {
+      cwd: repoDir,
+      stdio: 'pipe',
+    });
+
+    await expect(readPreferredRepoName(repoDir, repoDir)).resolves.toBe('obsidian-NoteMD');
   });
 });
 
