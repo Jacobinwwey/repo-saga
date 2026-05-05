@@ -53,6 +53,7 @@ Then run the CLI directly:
 node packages/cli/dist/index.js                              # opens the local web UI
 node packages/cli/dist/index.js https://github.com/owner/repo
 node packages/cli/dist/index.js ./my-project --theme academic --lang zh --out ./out
+node packages/cli/dist/index.js ./my-project --granularity quarter --out ./out
 ```
 
 If you'd like a shorter command, alias it:
@@ -75,6 +76,9 @@ Requires Node.js 18.17+, `pnpm`, and `git` available on `$PATH`.
 | `repo-saga <repo> --no-server`                             | Just emit the files; don't start the web server.                                                  |
 | `repo-saga <repo> --out ./output`                          | Write outputs into `./output`.                                                                    |
 | `repo-saga <repo> --theme dark-fantasy`                    | Choose an SVG theme (`epic`, `dark-fantasy`, `academic`, `minimal`).                              |
+| `repo-saga <repo> --granularity quarter`                   | Slice eras by quarter while keeping the same era/event poster style.                              |
+| `repo-saga <repo> --granularity month`                     | Slice eras by month for a finer chronicle.                                                        |
+| `repo-saga <repo> --granularity days --bucket-days 30`     | Slice eras into custom fixed-size day buckets anchored to the repo's first commit.               |
 | `repo-saga <repo> --max-commits 10000`                     | Cap how many commits to read on huge repos.                                                       |
 | `repo-saga <repo> --port 5555`                             | Pin the web server port.                                                                          |
 | `repo-saga --help`                                         | Show all flags.                                                                                   |
@@ -105,7 +109,10 @@ A structured snapshot of everything the analysis discovered:
     "contributors": 84,
     "tagCount": 96,
     "firstCommitDate": "2014-...",
-    "lastCommitDate": "2025-..."
+    "lastCommitDate": "2025-...",
+    "firstPeriodLabel": "2014 Q2",
+    "lastPeriodLabel": "2025 Q3",
+    "timelineGranularity": "quarter"
   },
   "eras":  [ /* 3..7 named eras with evidence */ ],
   "events": [ /* 14 detector outputs with evidence */ ],
@@ -135,6 +142,8 @@ Evidence:
 ### `saga.svg`
 
 A standalone, themable SVG poster with self-contained raster ornaments embedded as PNG data URIs. Looks like a tabletop "history of a project" map.
+
+Use `--granularity year|quarter|month|days` to change how eras are carved. The renderer keeps the same poster style and swaps in period labels such as `2024 Q1` or `2024-01-01 +30d`.
 
 ## Web UI
 

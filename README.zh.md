@@ -53,6 +53,7 @@ pnpm build
 node packages/cli/dist/index.js                              # 启动本地 web UI
 node packages/cli/dist/index.js https://github.com/owner/repo
 node packages/cli/dist/index.js ./my-project --theme academic --lang zh --out ./out
+node packages/cli/dist/index.js ./my-project --granularity quarter --out ./out
 ```
 
 想要短命令的话，可以加 alias：
@@ -76,6 +77,9 @@ pnpm --filter repo-saga link --global
 | `repo-saga <repo> --out ./output`                          | 输出到 `./output`。                                                                               |
 | `repo-saga <repo> --theme dark-fantasy`                    | 选择 SVG 主题（`epic` / `dark-fantasy` / `academic` / `minimal`）。                               |
 | `repo-saga <repo> --lang zh`                               | 输出中文（Markdown 标题、SVG 海报、纪元/事件名称都本地化）。                                       |
+| `repo-saga <repo> --granularity quarter`                   | 按季度切分纪元，同时保持原有 era/event 海报风格。                                                  |
+| `repo-saga <repo> --granularity month`                     | 按月份切分纪元，适合更细粒度的编年。                                                               |
+| `repo-saga <repo> --granularity days --bucket-days 30`     | 用自定义天数窗口切分纪元，并从仓库首次提交日期开始对齐分桶。                                       |
 | `repo-saga <repo> --max-commits 10000`                     | 大仓库时限制读取的 commit 数。                                                                    |
 | `repo-saga <repo> --port 5555`                             | 固定 web 服务器端口。                                                                             |
 | `repo-saga --help`                                         | 列出全部参数。                                                                                    |
@@ -106,7 +110,10 @@ pnpm --filter repo-saga link --global
     "contributors": 84,
     "tagCount": 96,
     "firstCommitDate": "2014-...",
-    "lastCommitDate": "2025-..."
+    "lastCommitDate": "2025-...",
+    "firstPeriodLabel": "2014 Q2",
+    "lastPeriodLabel": "2025 Q3",
+    "timelineGranularity": "quarter"
   },
   "eras":  [ /* 3..7 个命名纪元，每个都带证据 */ ],
   "events": [ /* 14 个探测器输出，附证据 */ ],
@@ -136,6 +143,8 @@ pnpm --filter repo-saga link --global
 ### `saga.svg`
 
 独立、可换主题的 SVG 海报，内嵌自包含的 PNG data URI 装饰资源。看起来像桌游里的"项目历史地图"。
+
+可通过 `--granularity year|quarter|month|days` 改变纪元切分尺度。渲染层保持同一套海报风格，只把时间标签替换为 `2024 Q1`、`2024-01-01 +30d` 这类 period label。
 
 ## Web UI
 
