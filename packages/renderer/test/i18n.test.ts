@@ -143,4 +143,56 @@ describe('renderer i18n coverage', () => {
       }),
     ).not.toMatch(/__[A-Z0-9_]+__/);
   });
+
+  it('overrides known English fallback leaks in downstream locales', () => {
+    const norwegianSvg = renderSvg(
+      {
+        ...fixture,
+        eras: [
+          {
+            ...fixture.eras[0],
+            name: 'Settler Era: Habits Take Root',
+            dominantEvents: [],
+            theme: 'a quieter chapter between bigger upheavals',
+          },
+        ],
+        events: [],
+      },
+      { lang: 'no' as never },
+    );
+    const greekSvg = renderSvg(
+      {
+        ...fixture,
+        eras: [
+          {
+            ...fixture.eras[0],
+            id: 'era-bug',
+            name: 'The Dark Years: Bug Plague',
+            dominantEvents: ['bug-plague-2024-q1'],
+          },
+          {
+            ...fixture.eras[0],
+            id: 'era-2',
+            name: 'Late Era: Maturity Sets In',
+            dominantEvents: [],
+          },
+        ],
+        events: [
+          fixture.events[0],
+          {
+            ...fixture.events[0],
+            id: 'bug-plague-2024-q1',
+            type: 'bug-plague',
+            title: 'Bug Plague',
+          },
+        ],
+      },
+      { lang: 'el' as never },
+    );
+
+    expect(norwegianSvg).not.toContain('The Civilization of');
+    expect(norwegianSvg).not.toContain('Settler Era');
+    expect(greekSvg).not.toContain('Late Era: Maturity Sets In');
+    expect(greekSvg).not.toContain('Bug Plague');
+  });
 });

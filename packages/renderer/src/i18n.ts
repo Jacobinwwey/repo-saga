@@ -198,6 +198,56 @@ const EVENT_TITLES_ZH_HANT: Record<EventType, string> = {
   'release-empire': '發布帝國',
 };
 
+const LOCALE_EVENT_TITLE_OVERRIDES: Partial<Record<SupportedLang, Partial<Record<EventType, string>>>> = {
+  da: {
+    'linting-theocracy': 'Linting-teokratiet',
+  },
+  el: {
+    'great-refactor-war': 'Ο Μεγάλος Πόλεμος Αναδόμησης',
+    'linting-theocracy': 'Θεοκρατία του Linting',
+    'bug-plague': 'Πανούκλα Σφαλμάτων',
+  },
+  fi: {
+    'typescript-invasion': 'TypeScriptin invaasio',
+  },
+  hu: {
+    'release-empire': 'Kiadási Birodalom',
+  },
+  sv: {
+    'typescript-invasion': 'TypeScript-invasion',
+  },
+  th: {
+    'linting-theocracy': 'เทวาธิปไตยแห่ง Linting',
+  },
+};
+
+const LOCALE_FALLBACK_ERA_NAME_OVERRIDES: Partial<Record<SupportedLang, string[]>> = {
+  el: [
+    'Ιδρυτική Εποχή: Ένα Χρονικό Αρχίζει',
+    'Εποχή εποίκων: Οι συνήθειες ριζώνουν',
+    'Μεσαίο Βασίλειο: Αργή Παρέκκλιση',
+    'Μεταρρύθμιση: Ήσυχες αλλαγές',
+    'Ύστερη Εποχή: Η ωριμότητα κατασταλάζει',
+    'Εποχή του Λυκόφωτος: Σταθερά χέρια',
+    'Σύγχρονη Εποχή: Το παρόν',
+  ],
+  no: [
+    'Grunnleggelsens æra: En krønike begynner',
+    'Nybyggeræra: Vaner tar rot',
+    'Midtriket: En langsom drift',
+    'Reformasjonen: Stille endringer',
+    'Sen æra: modenhet setter inn',
+    'Skumringsæra: Stødige hender',
+    'Moderne tid: Dagen i dag',
+  ],
+};
+
+const LOCALE_LABEL_OVERRIDES: Partial<Record<SupportedLang, Partial<Record<LabelKey, string>>>> = {
+  no: {
+    civilizationOf: 'Sivilisasjonen til __NAME__',
+  },
+};
+
 const ERA_PROFILE: Record<'en' | 'zh', Record<EventType, EraProfile>> = {
   en: {
     'initial-chaos': { prefix: 'Ancient Era', theme: 'foundations and improvisation' },
@@ -373,6 +423,8 @@ export function label(lang: Lang, key: LabelKey, vars: Record<string, string | n
 
 export function translateEventTitle(type: EventType, lang: Lang): string {
   const locale = resolveLang(lang);
+  const overriddenTitle = LOCALE_EVENT_TITLE_OVERRIDES[locale]?.[type];
+  if (overriddenTitle) return overriddenTitle;
   if (locale === 'en' || locale === 'zh') return EVENT_COPY[locale][type]?.title ?? EVENT_COPY.en[type].title;
   if (locale === 'zh_Hant') return EVENT_TITLES_ZH_HANT[type];
   return GENERATED_LOCALE_DATA[locale]?.eventTitles?.[type] ?? EVENT_COPY.en[type].title;
@@ -684,6 +736,8 @@ function resolveLang(lang: Lang): SupportedLang {
 
 function localeLabel(locale: SupportedLang, key: LabelKey): string {
   if (locale === 'en' || locale === 'zh') return LABELS[locale][key] ?? LABELS.en[key];
+  const overriddenLabel = LOCALE_LABEL_OVERRIDES[locale]?.[key];
+  if (overriddenLabel) return overriddenLabel;
   const generatedLabels = GENERATED_LOCALE_DATA[locale]?.labels as Partial<Record<LabelKey, string>> | undefined;
   return generatedLabels?.[key] ?? LABELS.en[key];
 }
@@ -695,6 +749,8 @@ function localeSeverity(locale: SupportedLang, sev: EventSeverity): string {
 
 function fallbackEraNamesFor(locale: SupportedLang): string[] {
   if (locale === 'en' || locale === 'zh') return FALLBACK_ERA_NAMES[locale] ?? FALLBACK_ERA_NAMES.en;
+  const overriddenNames = LOCALE_FALLBACK_ERA_NAME_OVERRIDES[locale];
+  if (overriddenNames) return [...overriddenNames];
   return [...(GENERATED_LOCALE_DATA[locale]?.fallbackEraNames ?? FALLBACK_ERA_NAMES.en)];
 }
 
