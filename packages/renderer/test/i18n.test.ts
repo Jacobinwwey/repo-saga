@@ -117,6 +117,7 @@ describe('renderer i18n coverage', () => {
       expect(svg).toContain(localizedHeading);
       expect(svg).toContain(localizedTitle);
       expect(svg).not.toMatch(/__[A-Z0-9_]+__/);
+      expect(svg).not.toContain('\uFFFD');
     }
   });
 
@@ -196,5 +197,23 @@ describe('renderer i18n coverage', () => {
     expect(greekSvg).not.toContain('Late Era: Maturity Sets In');
     expect(greekSvg).not.toContain('Bug Plague');
     expect(greekSvg).not.toContain('Empire');
+  });
+
+  it('replaces known machine-translated poster copy with curated locale copy', () => {
+    const arabicSvg = renderSvg(fixture, { lang: 'ar' as never });
+    const bengaliSvg = renderSvg(fixture, { lang: 'bn' as never });
+    const traditionalChineseSvg = renderSvg(fixture, { lang: 'zh_Hant' as never });
+
+    expect(arabicSvg).toContain('الأحداث الفاصلة');
+    expect(translateEventTitle('typescript-invasion', 'ar' as never)).toBe('اجتياح TypeScript');
+    expect(arabicSvg).not.toContain('غزو الآلة الكاتبة');
+
+    expect(bengaliSvg).toContain('নির্ধারক ঘটনা');
+    expect(translateEventTitle('release-empire', 'bn' as never)).toBe('রিলিজ সাম্রাজ্য');
+    expect(bengaliSvg).not.toContain('সাম্রাজ্য মুক্তি');
+
+    expect(traditionalChineseSvg).toContain('定義性事件');
+    expect(translateEventTitle('release-empire', 'zh_Hant' as never)).toBe('發布帝國');
+    expect(traditionalChineseSvg).not.toContain('釋放帝國');
   });
 });

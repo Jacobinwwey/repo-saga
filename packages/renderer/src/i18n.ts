@@ -1,5 +1,6 @@
 import type { DetectedEvent, Era, EventSeverity, EventType, Saga } from '@repo-saga/core';
 import { GENERATED_LOCALE_DATA } from './generated-locales.js';
+import { MANUAL_LOCALE_DATA } from './manual-locales.js';
 
 export const SUPPORTED_LANGS = [
   'en',
@@ -424,6 +425,19 @@ const LABELS = {
 } as const;
 
 export type LabelKey = keyof typeof LABELS.en;
+type EvidenceTemplateKey =
+  keyof (typeof GENERATED_LOCALE_DATA)[Exclude<SupportedLang, 'en' | 'zh'>]['evidenceTemplates'];
+
+interface ManualLocaleEntry {
+  eventTitles?: Partial<Record<EventType, string>>;
+  eraPrefixes?: Partial<Record<EventType, string>>;
+  fallbackEraNames?: Partial<Record<string, string>>;
+  labels?: Partial<Record<LabelKey, string>>;
+  severities?: Partial<Record<EventSeverity, string>>;
+  evidenceTemplates?: Partial<Record<EvidenceTemplateKey, string>>;
+}
+
+const MANUAL_LOCALE_LOOKUP = MANUAL_LOCALE_DATA as Partial<Record<SupportedLang, ManualLocaleEntry>>;
 
 export function label(lang: Lang, key: LabelKey, vars: Record<string, string | number> = {}): string {
   const locale = resolveLang(lang);
@@ -433,6 +447,8 @@ export function label(lang: Lang, key: LabelKey, vars: Record<string, string | n
 
 export function translateEventTitle(type: EventType, lang: Lang): string {
   const locale = resolveLang(lang);
+  const manualTitle = manualLocale(locale)?.eventTitles?.[type];
+  if (manualTitle) return manualTitle;
   const overriddenTitle = LOCALE_EVENT_TITLE_OVERRIDES[locale]?.[type];
   if (overriddenTitle) return overriddenTitle;
   if (locale === 'en' || locale === 'zh') return EVENT_COPY[locale][type]?.title ?? EVENT_COPY.en[type].title;
@@ -449,10 +465,12 @@ export function translateEventNarrative(type: EventType, lang: Lang): string {
 export function translateEraProfile(type: EventType, lang: Lang): EraProfile {
   const locale = resolveLang(lang);
   if (locale === 'en' || locale === 'zh') return ERA_PROFILE[locale][type] ?? ERA_PROFILE.en[type];
+  const manualPrefix = manualLocale(locale)?.eraPrefixes?.[type];
   const prefix =
-    locale === 'zh_Hant'
+    manualPrefix ??
+    (locale === 'zh_Hant'
       ? GENERATED_LOCALE_DATA.zh_Hant.eraPrefixes[type]
-      : GENERATED_LOCALE_DATA[locale]?.eraPrefixes?.[type];
+      : GENERATED_LOCALE_DATA[locale]?.eraPrefixes?.[type]);
   return {
     prefix: prefix ?? ERA_PROFILE.en[type].prefix,
     theme: label(locale, 'eraThemeTemplate', { title: translateEventTitle(type, locale) }),
@@ -462,6 +480,8 @@ export function translateEraProfile(type: EventType, lang: Lang): EraProfile {
 export function translateSeverity(sev: EventSeverity, lang: Lang): string {
   const locale = resolveLang(lang);
   if (locale === 'en' || locale === 'zh') return SEVERITY[locale][sev] ?? SEVERITY.en[sev];
+  const manual = manualLocale(locale)?.severities?.[sev];
+  if (manual) return manual;
   if (locale === 'zh_Hant') return localeSeverity(locale, sev);
   return GENERATED_LOCALE_DATA[locale]?.severities?.[sev] ?? SEVERITY.en[sev];
 }
@@ -746,6 +766,8 @@ function resolveLang(lang: Lang): SupportedLang {
 
 function localeLabel(locale: SupportedLang, key: LabelKey): string {
   if (locale === 'en' || locale === 'zh') return LABELS[locale][key] ?? LABELS.en[key];
+  const manual = manualLocale(locale)?.labels?.[key];
+  if (manual) return manual;
   const overriddenLabel = LOCALE_LABEL_OVERRIDES[locale]?.[key];
   if (overriddenLabel) return overriddenLabel;
   const generatedLabels = GENERATED_LOCALE_DATA[locale]?.labels as Partial<Record<LabelKey, string>> | undefined;
@@ -754,14 +776,25 @@ function localeLabel(locale: SupportedLang, key: LabelKey): string {
 
 function localeSeverity(locale: SupportedLang, sev: EventSeverity): string {
   if (locale === 'en' || locale === 'zh') return SEVERITY[locale][sev] ?? SEVERITY.en[sev];
+  const manual = manualLocale(locale)?.severities?.[sev];
+  if (manual) return manual;
   return GENERATED_LOCALE_DATA[locale]?.severities?.[sev] ?? SEVERITY.en[sev];
 }
 
 function fallbackEraNamesFor(locale: SupportedLang): string[] {
   if (locale === 'en' || locale === 'zh') return FALLBACK_ERA_NAMES[locale] ?? FALLBACK_ERA_NAMES.en;
   const overriddenNames = LOCALE_FALLBACK_ERA_NAME_OVERRIDES[locale];
-  if (overriddenNames) return [...overriddenNames];
-  return [...(GENERATED_LOCALE_DATA[locale]?.fallbackEraNames ?? FALLBACK_ERA_NAMES.en)];
+  const base = overriddenNames
+    ? [...overriddenNames]
+    : [...(GENERATED_LOCALE_DATA[locale]?.fallbackEraNames ?? FALLBACK_ERA_NAMES.en)];
+  const manual = manualLocale(locale)?.fallbackEraNames;
+  if (!manual) return base;
+  for (const [englishName, localizedName] of Object.entries(manual)) {
+    if (!localizedName) continue;
+    const idx = FALLBACK_INDEX[englishName];
+    if (idx !== undefined) base[idx] = localizedName;
+  }
+  return base;
 }
 
 function normalizeLocalizedText(key: LabelKey, value: string): string {
@@ -777,12 +810,18 @@ function normalizeLocalizedText(key: LabelKey, value: string): string {
 
 function genericEvidence(
   locale: SupportedLang,
-  key: keyof (typeof GENERATED_LOCALE_DATA)[Exclude<SupportedLang, 'en' | 'zh'>]['evidenceTemplates'],
+  key: EvidenceTemplateKey,
   vars: Record<string, string | number>,
 ): string {
-  const template = GENERATED_LOCALE_DATA[locale as Exclude<SupportedLang, 'en' | 'zh'>]?.evidenceTemplates?.[key];
+  const template =
+    manualLocale(locale)?.evidenceTemplates?.[key] ??
+    GENERATED_LOCALE_DATA[locale as Exclude<SupportedLang, 'en' | 'zh'>]?.evidenceTemplates?.[key];
   if (!template) return '';
-  return template.replace(/__([A-Z_]+)__/g, (_, token) => String(vars[token] ?? ''));
+  return template.replace(/__([A-Z_]+)__/g, (_match: string, token: string) => String(vars[token] ?? ''));
+}
+
+function manualLocale(locale: SupportedLang) {
+  return MANUAL_LOCALE_LOOKUP[locale];
 }
 
 function readEraDisplayLabel(era: Era, key: 'displayStartLabel' | 'displayEndLabel'): string | undefined {
