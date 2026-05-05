@@ -94,7 +94,7 @@ export interface SvgOptions {
   width?: number;
   /** maximum number of events drawn inside each era card (default 6) */
   maxEventsPerEra?: number;
-  /** rendering language: 'en' (default) or 'zh' */
+  /** rendering language (default: en) */
   lang?: Lang;
 }
 
@@ -610,15 +610,12 @@ function renderFooter(
   const metricW = 210;
   const totalMetricW = metricW * 4 + gap * 3;
   const startX = cx - totalMetricW / 2;
-  const captions =
-    lang === 'zh'
-      ? { commits: '提交', contributors: '贡献者', tags: 'TAG', topLanguages: '主要语言' }
-      : {
-          commits: 'COMMITS',
-          contributors: 'CONTRIBUTORS',
-          tags: 'TAGS',
-          topLanguages: 'TOP LANGUAGES',
-        };
+  const captions = {
+    commits: label(lang, 'metricCommits'),
+    contributors: label(lang, 'metricContributors'),
+    tags: label(lang, 'metricTags'),
+    topLanguages: label(lang, 'metricTopLanguages'),
+  };
   out.push(
     renderMetricBlock(
       startX,

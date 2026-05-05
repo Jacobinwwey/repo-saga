@@ -5,6 +5,7 @@ export { renderSvg, wrapText } from './svg.js';
 export type { SvgOptions, SvgTheme } from './svg.js';
 export type { Lang } from './i18n.js';
 export {
+  SUPPORTED_LANGS,
   label,
   translateEvent,
   translateEventTitle,

@@ -13,7 +13,7 @@ import {
 export interface MarkdownOptions {
   /** include the JSON-style stats section at the bottom */
   includeStats?: boolean;
-  /** rendering language: 'en' (default) or 'zh' */
+  /** rendering language (default: en) */
   lang?: Lang;
 }
 
