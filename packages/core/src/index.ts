@@ -78,14 +78,22 @@ export async function generateSaga(input: string, opts: AnalyzeOptions = {}): Pr
   const { events, ran } = runDetectors(analyzed);
 
   emit(onProgress, { phase: 'eras', message: 'Carving the timeline into eras…', progress: 0.85 });
-  const eras = groupIntoEras(analyzed, events);
+  const eras = groupIntoEras(analyzed, events, {
+    timelineGranularity: opts.timelineGranularity,
+    bucketDays: opts.bucketDays,
+  });
 
   emit(onProgress, { phase: 'rendering', message: 'Compiling saga…', progress: 0.95 });
   const stats = buildSagaStats(analyzed, events);
 
   const saga: Saga = {
     schemaVersion: 1,
-    repo: analyzed.repo,
+    repo: {
+      ...analyzed.repo,
+      firstPeriodLabel: eras[0]?.displayStartLabel,
+      lastPeriodLabel: eras[eras.length - 1]?.displayEndLabel,
+      timelineGranularity: opts.timelineGranularity ?? 'year',
+    },
     eras,
     events,
     stats,

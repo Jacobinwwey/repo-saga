@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { generateSaga, type ProgressEvent, type Saga } from '@repo-saga/core';
+import { generateSaga, type ProgressEvent, type Saga, type TimelineGranularity } from '@repo-saga/core';
 import { renderJson, renderMarkdown, renderSvg, translateEra, type Lang, type SvgTheme } from '@repo-saga/renderer';
 import { startServer } from '@repo-saga/server';
 import kleur from 'kleur';
@@ -18,6 +18,8 @@ export interface Args {
   port?: number;
   maxCommits?: number;
   cacheDir?: string;
+  granularity: TimelineGranularity;
+  bucketDays?: number;
   help?: boolean;
   version?: boolean;
   json?: boolean;
@@ -25,6 +27,7 @@ export interface Args {
 
 const VALID_THEMES: SvgTheme[] = ['epic', 'dark-fantasy', 'academic', 'minimal'];
 const VALID_LANGS: Lang[] = ['en', 'zh'];
+const VALID_GRANULARITIES: TimelineGranularity[] = ['year', 'quarter', 'month', 'days'];
 
 export function parseArgs(argv: string[]): Args {
   const args: Args = {
@@ -33,6 +36,7 @@ export function parseArgs(argv: string[]): Args {
     lang: 'en',
     open: true,
     server: true,
+    granularity: 'year',
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -52,6 +56,14 @@ export function parseArgs(argv: string[]): Args {
         die(`Invalid --lang "${l}". Allowed: ${VALID_LANGS.join(', ')}`);
       }
       args.lang = l;
+    } else if (a === '--granularity' || a === '-g') {
+      const granularity = argv[++i] as TimelineGranularity;
+      if (!VALID_GRANULARITIES.includes(granularity)) {
+        die(`Invalid --granularity "${granularity}". Allowed: ${VALID_GRANULARITIES.join(', ')}`);
+      }
+      args.granularity = granularity;
+    } else if (a === '--bucket-days') {
+      args.bucketDays = parseInt(argv[++i], 10);
     } else if (a === '--port' || a === '-p') {
       args.port = parseInt(argv[++i], 10);
     } else if (a === '--max-commits') {
@@ -72,6 +84,12 @@ export function parseArgs(argv: string[]): Args {
 
 export function validateArgs(args: Args): string | undefined {
   if (args.json && args.server) return '--json is only supported with --no-server';
+  if (args.granularity !== 'days' && args.bucketDays !== undefined) {
+    return '--bucket-days is only supported with --granularity days';
+  }
+  if (args.granularity === 'days' && (!args.bucketDays || Number.isNaN(args.bucketDays) || args.bucketDays < 1)) {
+    return '--granularity days requires --bucket-days <positive integer>';
+  }
   return undefined;
 }
 
@@ -88,6 +106,7 @@ function help() {
     `  ${kleur.cyan('repo-saga <repo>')}                        Analyse a repo URL or local path`,
     `  ${kleur.cyan('repo-saga <repo> --out ./out')}            Write outputs to a directory`,
     `  ${kleur.cyan('repo-saga <repo> --theme dark-fantasy')}   Choose an SVG theme`,
+    `  ${kleur.cyan('repo-saga <repo> --granularity quarter')}  Slice eras by quarter`,
     `  ${kleur.cyan('repo-saga <repo> --no-open')}              Don't auto-open the browser`,
     `  ${kleur.cyan('repo-saga <repo> --no-server')}            Just write files; don't launch UI`,
     '',
@@ -95,6 +114,8 @@ function help() {
     '  --out, -o <dir>          Output directory for saga.json/saga.md/saga.svg (default cwd)',
     `  --theme, -t <name>       SVG theme: ${VALID_THEMES.join(' | ')} (default epic)`,
     `  --lang, -l <code>        Output language: ${VALID_LANGS.join(' | ')} (default en)`,
+    `  --granularity, -g <mode> Timeline slicing: ${VALID_GRANULARITIES.join(' | ')} (default year)`,
+    '  --bucket-days <num>      Custom bucket size when --granularity days',
     '  --port, -p <num>         Port for the local server (default: random)',
     '  --max-commits <num>      Limit commits read for very large repos',
     '  --cache-dir <path>       Where to clone remote repos (default: $TMPDIR/repo-saga-cache)',
@@ -184,6 +205,8 @@ async function main() {
     onProgress: progressLogger(info),
     maxCommits: args.maxCommits,
     cacheDir: args.cacheDir,
+    timelineGranularity: args.granularity,
+    bucketDays: args.bucketDays,
   });
 
   if (args.json && !args.server) {
@@ -202,7 +225,7 @@ async function main() {
   );
   for (const era of saga.eras) {
     const name = translateEra(era, saga.events, args.lang).name;
-    info(`  ${kleur.cyan(`${era.startYear}–${era.endYear}`)}  ${kleur.bold(name)}`);
+    info(`  ${kleur.cyan(displayEraPeriod(era))}  ${kleur.bold(name)}`);
   }
 
   if (!args.server) return;
@@ -227,6 +250,12 @@ async function tryOpen(url: string) {
 
 function isDirectRun(): boolean {
   return Boolean(process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url));
+}
+
+function displayEraPeriod(era: Saga['eras'][number]): string {
+  const start = era.displayStartLabel ?? String(era.startYear);
+  const end = era.displayEndLabel ?? String(era.endYear);
+  return start === end ? start : `${start}–${end}`;
 }
 
 if (isDirectRun()) {
