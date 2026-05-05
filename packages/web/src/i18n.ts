@@ -1,7 +1,8 @@
 import type { EventSeverity, ProgressEvent } from '@repo-saga/core';
+import { ALL_LANGS, languageLabel, type Lang } from '@repo-saga/renderer';
 import type { ThemeName } from './theme';
 
-export type UiLang = 'en' | 'zh';
+export type UiLang = Lang;
 
 type JobStatus = 'queued' | 'running' | 'done' | 'error';
 
@@ -10,7 +11,7 @@ export interface UiCopy {
     theme: string;
     language: string;
     themeLabels: Record<ThemeName, string>;
-    languageLabels: Record<UiLang, string>;
+    languageLabels: Record<string, string>;
   };
   form: {
     label: string;
@@ -86,9 +87,9 @@ export interface UiCopy {
   footer: string;
 }
 
-export const LANGS: UiLang[] = ['zh', 'en'];
+export const LANGS: UiLang[] = ALL_LANGS;
 
-export const UI_COPY: Record<UiLang, UiCopy> = {
+const UI_COPY_BASE: Record<'en' | 'zh', UiCopy> = {
   en: {
     toolbar: {
       theme: 'Theme',
@@ -373,16 +374,36 @@ export const UI_COPY: Record<UiLang, UiCopy> = {
   },
 };
 
+function withLanguageLabels(copy: UiCopy, uiLang: 'en' | 'zh'): UiCopy {
+  return {
+    ...copy,
+    toolbar: {
+      ...copy.toolbar,
+      languageLabels: Object.fromEntries(
+        LANGS.map((lang) => [lang, languageLabel(lang, uiLang)]),
+      ) as Record<UiLang, string>,
+    },
+  };
+}
+
+export const UI_COPY: Record<UiLang, UiCopy> = Object.fromEntries(
+  LANGS.map((lang) => {
+    const base = lang === 'zh' || lang === 'zh-Hant' ? UI_COPY_BASE.zh : UI_COPY_BASE.en;
+    const uiLang = lang === 'zh' || lang === 'zh-Hant' ? 'zh' : 'en';
+    return [lang, withLanguageLabels(base, uiLang)];
+  }),
+) as Record<UiLang, UiCopy>;
+
 export function formatTemplate(template: string, vars: Record<string, string | number>): string {
   return template.replace(/\{(\w+)\}/g, (_, key: string) => String(vars[key] ?? ''));
 }
 
 export function formatNumber(value: number, lang: UiLang): string {
-  return value.toLocaleString(lang === 'zh' ? 'zh-CN' : 'en-US');
+  return value.toLocaleString(lang === 'zh-Hant' ? 'zh-TW' : lang.replace('_', '-'));
 }
 
 export function localizeError(message: string, lang: UiLang): string {
-  if (lang === 'en') return message;
+  if (lang !== 'zh' && lang !== 'zh-Hant') return message;
   return message
     .replace('Job creation failed', UI_COPY.zh.errors.jobCreation)
     .replace('Saga retrieval failed', UI_COPY.zh.errors.sagaRetrieval)
@@ -394,7 +415,7 @@ export function localizeError(message: string, lang: UiLang): string {
 }
 
 export function localizeProgressMessage(event: ProgressEvent, lang: UiLang): string {
-  if (lang === 'en') return event.message;
+  if (lang !== 'zh' && lang !== 'zh-Hant') return event.message;
 
   const message = event.message;
   const parsed = message.match(/^Parsed ([\d,]+) commits$/);

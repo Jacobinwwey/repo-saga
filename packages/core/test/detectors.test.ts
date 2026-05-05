@@ -370,4 +370,51 @@ describe('eras grouping', () => {
     expect(eras.length).toBeGreaterThan(0);
     expect(eras[0].startYear).toBe(2024);
   });
+
+  it('supports fixed quarter buckets with period labels', () => {
+    const commits: RawCommit[] = [
+      commit('q1'.repeat(13) + '0', '2024-01-15T00:00:00Z', 'feat: q1', [
+        { path: 'src/q1.ts', insertions: 10, deletions: 0 },
+      ]),
+      commit('q2'.repeat(13) + '0', '2024-05-02T00:00:00Z', 'feat: q2', [
+        { path: 'src/q2.ts', insertions: 12, deletions: 1 },
+      ]),
+    ];
+    const analyzed = buildAnalyzedRepo({
+      repoName: 'quarterly',
+      source: '/quarterly',
+      resolvedPath: '/quarterly',
+      commits,
+      tags: [],
+    });
+    const eras = groupIntoEras(analyzed, [], { split: 'quarter' });
+    expect(eras.map((era) => era.periodLabel)).toEqual(['2024-Q1', '2024-Q2']);
+    expect(eras[0].startDate).toBe('2024-01-01');
+    expect(eras[1].endDate).toBe('2024-06-30');
+  });
+
+  it('supports custom day buckets', () => {
+    const commits: RawCommit[] = [
+      commit('d1'.repeat(13) + '0', '2024-01-01T00:00:00Z', 'feat: first', [
+        { path: 'src/one.ts', insertions: 8, deletions: 0 },
+      ]),
+      commit('d2'.repeat(13) + '0', '2024-01-20T00:00:00Z', 'feat: second', [
+        { path: 'src/two.ts', insertions: 9, deletions: 1 },
+      ]),
+      commit('d3'.repeat(13) + '0', '2024-02-05T00:00:00Z', 'feat: third', [
+        { path: 'src/three.ts', insertions: 7, deletions: 1 },
+      ]),
+    ];
+    const analyzed = buildAnalyzedRepo({
+      repoName: 'daily',
+      source: '/daily',
+      resolvedPath: '/daily',
+      commits,
+      tags: [],
+    });
+    const eras = groupIntoEras(analyzed, [], { split: 'day', dayWindow: 20 });
+    expect(eras).toHaveLength(2);
+    expect(eras[0].periodLabel).toBe('2024-01-01–2024-01-20');
+    expect(eras[1].periodLabel).toBe('2024-01-21–2024-02-05');
+  });
 });

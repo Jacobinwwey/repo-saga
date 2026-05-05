@@ -1,4 +1,5 @@
 import { buildAnalyzedRepo, isCodeFile, isTestFile, yearOf } from './analyzer.js';
+import { eventOverlapsEra, formatEraPeriod, normalizeEraSplit } from './periods.js';
 import {
   defaultCacheDir,
   deriveRepoName,
@@ -78,7 +79,10 @@ export async function generateSaga(input: string, opts: AnalyzeOptions = {}): Pr
   const { events, ran } = runDetectors(analyzed);
 
   emit(onProgress, { phase: 'eras', message: 'Carving the timeline into eras…', progress: 0.85 });
-  const eras = groupIntoEras(analyzed, events);
+  const eras = groupIntoEras(analyzed, events, {
+    split: opts.eraSplit,
+    dayWindow: opts.eraDays,
+  });
 
   emit(onProgress, { phase: 'rendering', message: 'Compiling saga…', progress: 0.95 });
   const stats = buildSagaStats(analyzed, events);
@@ -527,8 +531,11 @@ export {
   buildAnalyzedRepo,
   defaultCacheDir,
   deriveRepoName,
+  eventOverlapsEra,
+  formatEraPeriod,
   groupIntoEras,
   isRemoteUrl,
+  normalizeEraSplit,
   readBranches,
   readDefaultBranch,
   readGitLog,
@@ -537,5 +544,6 @@ export {
   runDetectors,
 };
 export * from './types.js';
+export * from './periods.js';
 export type { Detector } from './detectors.js';
 export type { AnalyzedRepo, DetectedEvent, Era };

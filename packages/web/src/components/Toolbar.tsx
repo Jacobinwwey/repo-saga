@@ -29,18 +29,13 @@ export function Toolbar({ theme, onTheme, lang, onLang, copy }: Props) {
       </div>
       <div className="rs-toolbar-group">
         <label className="rs-toolbar-label">{copy.language}</label>
-        <div className="rs-toolbar-buttons rs-lang-buttons">
+        <select className="rs-toolbar-select" value={lang} onChange={(event) => onLang(event.currentTarget.value as UiLang)}>
           {LANGS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              className={option === lang ? 'rs-toolbar-btn rs-active' : 'rs-toolbar-btn'}
-              onClick={() => onLang(option)}
-            >
+            <option key={option} value={option}>
               {copy.languageLabels[option]}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
       </div>
     </div>
   );

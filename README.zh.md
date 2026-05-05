@@ -52,7 +52,9 @@ pnpm build
 ```bash
 node packages/cli/dist/index.js                              # 启动本地 web UI
 node packages/cli/dist/index.js https://github.com/owner/repo
-node packages/cli/dist/index.js ./my-project --theme academic --lang zh --out ./out
+node packages/cli/dist/index.js ./my-project --theme academic --lang zh-Hant --out ./out
+node packages/cli/dist/index.js ./my-project --era-split quarter
+node packages/cli/dist/index.js ./my-project --era-split day --era-days 30
 ```
 
 想要短命令的话，可以加 alias：
@@ -76,6 +78,10 @@ pnpm --filter repo-saga link --global
 | `repo-saga <repo> --out ./output`                          | 输出到 `./output`。                                                                               |
 | `repo-saga <repo> --theme dark-fantasy`                    | 选择 SVG 主题（`epic` / `dark-fantasy` / `academic` / `minimal`）。                               |
 | `repo-saga <repo> --lang zh`                               | 输出中文（Markdown 标题、SVG 海报、纪元/事件名称都本地化）。                                       |
+| `repo-saga <repo> --lang fr`                               | 输出为任意受支持的 locale（覆盖 README_* 这组多语言代码，如 `fr`、`ja`、`ru`、`zh-Hant`）。      |
+| `repo-saga <repo> --era-split quarter`                     | 强制按季度切分纪元（如 `2024-Q1`、`2024-Q2`）。                                                   |
+| `repo-saga <repo> --era-split month`                       | 强制按月份切分纪元（如 `2024-01`、`2024-02`）。                                                   |
+| `repo-saga <repo> --era-split day --era-days 30`           | 强制按固定天数窗口切分纪元（例如每 30 天一个纪元）。                                              |
 | `repo-saga <repo> --max-commits 10000`                     | 大仓库时限制读取的 commit 数。                                                                    |
 | `repo-saga <repo> --port 5555`                             | 固定 web 服务器端口。                                                                             |
 | `repo-saga --help`                                         | 列出全部参数。                                                                                    |
@@ -87,6 +93,8 @@ pnpm --filter repo-saga link --global
 - 本地包含 `.git` 的目录路径
 
 给定远程 URL 时，`repo-saga` 会克隆到 `$TMPDIR/repo-saga-cache`（可用 `--cache-dir` 修改）。命中缓存时会自动 `fetch + ff-only pull`，不会用陈旧数据。
+
+当前支持的 locale 代码与多语言 README 仓库常见集合对齐：`en`、`ar`、`bn`、`cs`、`da`、`de`、`el`、`es`、`fi`、`fr`、`he`、`hi`、`hu`、`id`、`it`、`ja`、`ko`、`ms`、`nl`、`no`、`pl`、`pt`、`ro`、`ru`、`sv`、`th`、`tr`、`uk`、`vi`、`zh`、`zh-Hant`。当前完整维护的文案表为英文与简体中文；其余 locale 会在整条链路中保留所选语言代码，并稳定回退到英文文案。
 
 ## 输出物
 

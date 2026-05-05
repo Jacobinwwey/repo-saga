@@ -216,6 +216,10 @@ export interface Era {
   name: string;
   startYear: number;
   endYear: number;
+  startDate?: string;
+  endDate?: string;
+  periodLabel?: string;
+  granularity?: 'year' | 'quarter' | 'month' | 'day';
   theme: string;
   summary: string;
   /** Raw numbers used to (re)compose era.summary in any language. */
@@ -322,4 +326,8 @@ export interface AnalyzeOptions {
   force?: boolean;
   /** accept a custom git binary (defaults to PATH 'git') */
   gitBin?: string;
+  /** era grouping mode: auto (heuristic), year, quarter, month, or fixed day windows */
+  eraSplit?: 'auto' | 'year' | 'quarter' | 'month' | 'day';
+  /** custom day window size used when eraSplit = day */
+  eraDays?: number;
 }

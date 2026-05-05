@@ -95,8 +95,8 @@ describe('renderMarkdown', () => {
     expect(md).toContain('## Migration Era: TypeScript Invasion, 2021–2022');
     expect(md).toContain('182 commits in the first 4 months');
     expect(md).toContain('TypeScript crossed 50% in 2021');
-    expect(md).toContain('### Initial Chaos (2019)');
-    expect(md).toContain('### TypeScript Invasion (2021–2022)');
+    expect(md).toContain('### Initial Chaos (2019-03-12–2019-05-12)');
+    expect(md).toContain('### TypeScript Invasion (2021-01-15–2022-12-31)');
     expect(md).toContain('repo-saga');
   });
 
@@ -105,8 +105,8 @@ describe('renderMarkdown', () => {
     expect(md).toContain('# demo 的文明史');
     expect(md).toContain('## 远古纪元: 初始混沌, 2019–2020');
     expect(md).toContain('## 迁徙纪元: TypeScript 入侵, 2021–2022');
-    expect(md).toContain('### 初始混沌 (2019)');
-    expect(md).toContain('### TypeScript 入侵 (2021–2022)');
+    expect(md).toContain('### 初始混沌 (2019-03-12–2019-05-12)');
+    expect(md).toContain('### TypeScript 入侵 (2021-01-15–2022-12-31)');
     expect(md).toContain('**证据：**');
     expect(md).toContain('**本纪元中的事件：**');
     expect(md).toContain('强度：**重大**，置信度：80%。');
@@ -139,5 +139,11 @@ describe('renderMarkdown', () => {
     expect(md).toContain('tsconfig.json 首次出现于 2021-01-15（packages/foo/tsconfig.json）');
     expect(md).toContain('TypeScript 在 2021 年越过代码插入量的 50%');
     expect(md).toContain('在 2015-12-05 至 2025-09-30 之间共发现 64 个 tag');
+  });
+
+  it('accepts non-zh locales and falls back to English copy', () => {
+    const md = renderMarkdown(fixture, { lang: 'fr' });
+    expect(md).toContain('# The Civilization of demo');
+    expect(md).toContain('## Ancient Era: Initial Chaos, 2019–2020');
   });
 });

@@ -7,8 +7,9 @@ import {
   translateEventTitle,
   translateEvidence,
   translateSeverity,
-  type Lang,
 } from './i18n.js';
+import type { Lang } from './locales.js';
+import { eventOverlapsEra, formatEraPeriod, formatEventRange } from './periods.js';
 
 export interface MarkdownOptions {
   /** include the JSON-style stats section at the bottom */
@@ -34,7 +35,7 @@ export function renderMarkdown(saga: Saga, opts: MarkdownOptions = {}): string {
 
   for (const era of saga.eras) {
     const localized = translateEra(era, saga.events, lang);
-    lines.push(`## ${escape(localized.name)}, ${era.startYear}–${era.endYear}`);
+    lines.push(`## ${escape(localized.name)}, ${formatEraPeriod(era)}`);
     lines.push('');
     lines.push(`> _${escape(localized.theme)}_`);
     lines.push('');
@@ -116,7 +117,7 @@ export function renderMarkdown(saga: Saga, opts: MarkdownOptions = {}): string {
 }
 
 function isEventInEra(event: DetectedEvent, era: Era): boolean {
-  return event.endYear >= era.startYear && event.startYear <= era.endYear;
+  return eventOverlapsEra(event, era);
 }
 
 function _subtitle(saga: Saga, lang: Lang): string {
@@ -136,8 +137,7 @@ function shortYear(iso: string): string {
 }
 
 function formatRange(event: DetectedEvent): string {
-  if (event.startYear === event.endYear) return String(event.startYear);
-  return `${event.startYear}–${event.endYear}`;
+  return formatEventRange(event);
 }
 
 function escape(s: string): string {

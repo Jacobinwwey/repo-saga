@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ProgressEvent, Saga } from '@repo-saga/core';
+import { normalizeLang } from '@repo-saga/renderer';
 import { SagaForm } from './components/SagaForm';
 import { ProgressPanel } from './components/ProgressPanel';
 import { SagaView } from './components/SagaView';
@@ -29,7 +30,7 @@ export function App() {
   }, [theme]);
 
   useEffect(() => {
-    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.documentElement.lang = lang === 'zh-Hant' ? 'zh-TW' : lang === 'zh' ? 'zh-CN' : lang;
     window.localStorage.setItem('repo-saga-lang', lang);
   }, [lang]);
 
@@ -206,9 +207,10 @@ export function App() {
 
 function initialLang(): UiLang {
   if (typeof window === 'undefined') return 'zh';
-  const query = new URLSearchParams(window.location.search).get('lang');
-  if (query === 'en' || query === 'zh') return query;
+  const query = normalizeLang(new URLSearchParams(window.location.search).get('lang') ?? undefined);
+  if (query) return query;
   const stored = window.localStorage.getItem('repo-saga-lang');
-  if (stored === 'en' || stored === 'zh') return stored;
+  const normalizedStored = normalizeLang(stored ?? undefined);
+  if (normalizedStored) return normalizedStored;
   return 'zh';
 }

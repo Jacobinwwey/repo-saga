@@ -2,10 +2,14 @@ import { useMemo, useState } from 'react';
 import type { DetectedEvent, Era, EvidenceLink, Saga } from '@repo-saga/core';
 import {
   composeEraSummary,
+  eraContainsDate,
+  eventOverlapsEra,
+  formatEraPeriod,
+  formatEventRange,
   translateEvidence,
   translateSaga,
   type Lang,
-} from '@repo-saga/renderer/i18n';
+} from '@repo-saga/renderer';
 import { formatNumber, formatTemplate, type UiCopy, type UiLang } from '../i18n';
 import type { ThemeName } from '../theme';
 
@@ -58,7 +62,7 @@ export function SagaView({
 
   const activeEra = localizedSaga.eras.find((e) => e.id === selectedEra) ?? localizedSaga.eras[0];
   const eventsInEra = activeEra
-    ? perspectiveEvents.filter((ev) => ev.endYear >= activeEra.startYear && ev.startYear <= activeEra.endYear)
+    ? perspectiveEvents.filter((ev) => eventOverlapsEra(ev, activeEra))
     : [];
 
   const localizedJson = useMemo(
@@ -92,7 +96,7 @@ export function SagaView({
 
   function eraSummary(era: Era): string {
     const rawEra = rawEraById.get(era.id) ?? era;
-    return lang === 'zh' ? composeEraSummary(rawEra, saga.events, lang as Lang) : rawEra.summary;
+    return lang === 'en' ? rawEra.summary : composeEraSummary(rawEra, saga.events, lang as Lang);
   }
 
   function eraEvidence(era: Era): string[] {
@@ -103,8 +107,8 @@ export function SagaView({
   function onTimeTravel(snapshotIndex: number) {
     setSelectedSnapshotIndex(snapshotIndex);
     const snapshot = timeTravelSnapshots[snapshotIndex];
-    const year = snapshot ? Number(snapshot.date.slice(0, 4)) : selectedYear;
-    const eraAtYear = localizedSaga.eras.find((era) => era.startYear <= year && era.endYear >= year);
+    const snapshotDate = snapshot?.date ?? `${selectedYear}-01-01`;
+    const eraAtYear = localizedSaga.eras.find((era) => eraContainsDate(era, snapshotDate));
     if (eraAtYear) setSelectedEra(eraAtYear.id);
   }
 
@@ -203,7 +207,7 @@ export function SagaView({
                 className={`rs-era-item${era.id === activeEra?.id ? ' rs-active' : ''}`}
                 onClick={() => {
                   setSelectedEra(era.id);
-                  const eraSnapshotIndex = findNearestSnapshotIndex(timeTravelSnapshots, era.startYear, Math.min(selectedSnapshotIndex, maxSnapshotIndex));
+                  const eraSnapshotIndex = findNearestSnapshotIndex(timeTravelSnapshots, era.startDate ?? `${era.startYear}-01-01`, Math.min(selectedSnapshotIndex, maxSnapshotIndex));
                   setSelectedSnapshotIndex(eraSnapshotIndex);
                 }}
               >
@@ -212,7 +216,7 @@ export function SagaView({
                   <h3>{era.name}</h3>
                   <p>
                     <small>
-                      {era.startYear}–{era.endYear} · {era.theme}
+                      {formatEraPeriod(era)} · {era.theme}
                     </small>
                   </p>
                   <p className="rs-era-summary">{eraSummary(era)}</p>
@@ -427,7 +431,7 @@ function EventCard({
       <header>
         <strong>{event.title}</strong>
         <span className="rs-event-range">
-          {event.startYear === event.endYear ? String(event.startYear) : `${event.startYear}–${event.endYear}`}
+          {formatEventRange(event)}
         </span>
         <span className="rs-event-sev">{copy.severityLabels[event.severity]}</span>
       </header>
@@ -578,7 +582,8 @@ function yearsInSaga(saga: Saga): number[] {
   const years = new Set<number>();
   for (const year of Object.keys(saga.stats.commitsByYear)) years.add(Number(year));
   for (const era of saga.eras) {
-    for (let year = era.startYear; year <= era.endYear; year++) years.add(year);
+    years.add(era.startYear);
+    years.add(era.endYear);
   }
   return [...years].filter(Number.isFinite).sort((a, b) => a - b);
 }
@@ -611,11 +616,12 @@ function linkLabel(link: EvidenceLink, copy: UiCopy['saga']): string {
 
 function findNearestSnapshotIndex(
   snapshots: NonNullable<Saga['stats']['timeTravelSnapshots']>,
-  year: number,
+  startDate: string,
   fallback: number,
 ): number {
   if (snapshots.length === 0) return 0;
-  const target = Date.UTC(year, 6, 1);
+  const parsed = new Date(`${startDate.slice(0, 10)}T00:00:00Z`);
+  const target = Number.isNaN(parsed.getTime()) ? Date.UTC(new Date().getUTCFullYear(), 6, 1) : parsed.getTime();
   let best = Math.min(fallback, snapshots.length - 1);
   let bestDistance = Number.POSITIVE_INFINITY;
   for (let i = 0; i < snapshots.length; i++) {

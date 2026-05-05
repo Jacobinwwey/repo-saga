@@ -5,8 +5,9 @@ import {
   translateEra,
   translateEventTitle,
   translateEvidence,
-  type Lang,
 } from './i18n.js';
+import type { Lang } from './locales.js';
+import { eventOverlapsEra, formatEraPeriod, formatEventRange } from './periods.js';
 import { RASTER_ICON_DATA, type RasterIconName } from './raster-assets.js';
 
 const usedRasterIcons = new Set<RasterIconName>();
@@ -153,6 +154,10 @@ function defaultEra(saga: Saga): Era {
     name: 'Founding Era: A Chronicle Begins',
     startYear: yearOf(saga.repo.firstCommitDate),
     endYear: yearOf(saga.repo.lastCommitDate),
+    startDate: saga.repo.firstCommitDate.slice(0, 10),
+    endDate: saga.repo.lastCommitDate.slice(0, 10),
+    periodLabel: `${yearOf(saga.repo.firstCommitDate)}–${yearOf(saga.repo.lastCommitDate)}`,
+    granularity: 'year',
     theme: 'no events were detected, but every chronicle has a beginning',
     summary: `${saga.repo.commitCount} commits, ${saga.repo.contributors} contributors.`,
     summaryStats: {
@@ -433,7 +438,7 @@ function renderTimelineStrip(
     const labelX = Math.min(x1 - 86, Math.max(x0 + 86, (ex0 + exEnd) / 2));
     const localized = translateEra(era, saga.events, lang);
     const eventsInEra = saga.events.filter(
-      (ev) => ev.endYear >= era.startYear && ev.startYear <= era.endYear,
+      (ev) => eventOverlapsEra(ev, era),
     );
     out.push(renderTimelineIcon(pickEraVisual(era, eventsInEra), labelX, trackY - 96));
     const labelMaxW = Math.max(76, Math.min(150, w / eras.length - 14));
@@ -509,7 +514,7 @@ function renderEra(
 
   const localized = translateEra(era, events, lang);
   const eventsInEra = events
-    .filter((ev) => ev.endYear >= era.startYear && ev.startYear <= era.endYear)
+    .filter((ev) => eventOverlapsEra(ev, era))
     .sort((a, b) => b.score - a.score)
     .slice(0, maxEvents);
   const sceneX = cardX + cardW - 270;
@@ -521,7 +526,7 @@ function renderEra(
   const evX = cardX + cardW * 0.55;
   const nameMaxW = Math.max(300, evX - nameX - 38);
   const fittedName = fitTextLine(localized.name, 28, nameMaxW, 20);
-  const fittedTheme = fitTextLine(`${era.startYear}–${era.endYear}  ·  ${localized.theme}`, 14, nameMaxW, 10);
+  const fittedTheme = fitTextLine(`${formatEraPeriod(era)}  ·  ${localized.theme}`, 14, nameMaxW, 10);
   out.push(
     `<text x="${nameX}" y="${nameY}" font-family=${attr(theme.fontTitle)} font-size="${fittedName.fontSize}" font-weight="700" fill="${theme.ink}">${escapeXml(fittedName.text)}</text>`,
   );
@@ -553,8 +558,7 @@ function renderEra(
   } else {
     for (const ev of eventsInEra) {
       const dot = `<circle cx="${evX + 6}" cy="${lineY - 4}" r="5" fill="${color}" stroke="${theme.ink}" stroke-width="0.6"/>`;
-      const range =
-        ev.startYear === ev.endYear ? `${ev.startYear}` : `${ev.startYear}–${ev.endYear}`;
+      const range = formatEventRange(ev);
       const localizedTitle = translateEventTitle(ev.type, lang);
       const titleLine = fitTextLine(`${localizedTitle}  · ${range}`, 14, evTextMaxW - 18, 10);
       out.push(dot);

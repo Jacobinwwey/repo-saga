@@ -26,4 +26,23 @@ describe('CLI args', () => {
     expect(lines[0]).toContain('Resolving source');
     expect(lines[1]).toContain('Saga complete');
   });
+
+  it('parses locale aliases and fixed era split options', () => {
+    const args = parseArgs(['./repo', '--lang', 'zh_Hant', '--era-split', 'quarter']);
+    expect(args.lang).toBe('zh-Hant');
+    expect(args.eraSplit).toBe('quarter');
+    expect(validateArgs(args)).toBeUndefined();
+  });
+
+  it('requires a positive day window when split is day', () => {
+    const args = parseArgs(['./repo', '--era-split', 'day', '--era-days', '14']);
+    expect(args.eraSplit).toBe('day');
+    expect(args.eraDays).toBe(14);
+    expect(validateArgs(args)).toBeUndefined();
+
+    const invalid = parseArgs(['./repo', '--era-split', 'day']);
+    expect(validateArgs(invalid)).toBe(
+      '--era-days must be a positive integer when --era-split day is used',
+    );
+  });
 });

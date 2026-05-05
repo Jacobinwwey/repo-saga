@@ -1,5 +1,6 @@
 import type { Saga } from '@repo-saga/core';
-import { translateSaga, type Lang } from './i18n.js';
+import { translateSaga } from './i18n.js';
+import type { Lang } from './locales.js';
 
 export function renderJson(saga: Saga, opts: { pretty?: boolean; lang?: Lang } = {}): string {
   const localized = opts.lang ? translateSaga(saga, opts.lang) : saga;

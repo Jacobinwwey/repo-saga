@@ -1,6 +1,6 @@
 import type { DetectedEvent, Era, EventSeverity, EventType, Saga } from '@repo-saga/core';
-
-export type Lang = 'en' | 'zh';
+import { fallbackLang, type Lang } from './locales.js';
+import { formatEraPeriod } from './periods.js';
 
 interface EventCopy {
   title: string;
@@ -12,7 +12,7 @@ interface EraProfile {
   theme: string;
 }
 
-const EVENT_COPY: Record<Lang, Record<EventType, EventCopy>> = {
+const EVENT_COPY: Record<'en' | 'zh', Record<EventType, EventCopy>> = {
   en: {
     'initial-chaos': {
       title: 'Initial Chaos',
@@ -145,7 +145,7 @@ const EVENT_COPY: Record<Lang, Record<EventType, EventCopy>> = {
   },
 };
 
-const ERA_PROFILE: Record<Lang, Record<EventType, EraProfile>> = {
+const ERA_PROFILE: Record<'en' | 'zh', Record<EventType, EraProfile>> = {
   en: {
     'initial-chaos': { prefix: 'Ancient Era', theme: 'foundations and improvisation' },
     'typescript-invasion': { prefix: 'Migration Era', theme: 'a typed people supplanting the old idioms' },
@@ -180,7 +180,7 @@ const ERA_PROFILE: Record<Lang, Record<EventType, EraProfile>> = {
   },
 };
 
-const FALLBACK_ERA_NAMES: Record<Lang, string[]> = {
+const FALLBACK_ERA_NAMES: Record<'en' | 'zh', string[]> = {
   en: [
     'Founding Era: A Chronicle Begins',
     'Settler Era: Habits Take Root',
@@ -201,12 +201,12 @@ const FALLBACK_ERA_NAMES: Record<Lang, string[]> = {
   ],
 };
 
-const FALLBACK_THEME: Record<Lang, string> = {
+const FALLBACK_THEME: Record<'en' | 'zh', string> = {
   en: 'a quieter chapter between bigger upheavals',
   zh: '两段动荡之间相对平静的章节',
 };
 
-const SEVERITY: Record<Lang, Record<EventSeverity, string>> = {
+const SEVERITY: Record<'en' | 'zh', Record<EventSeverity, string>> = {
   en: {
     minor: 'minor',
     notable: 'notable',
@@ -221,7 +221,7 @@ const SEVERITY: Record<Lang, Record<EventSeverity, string>> = {
   },
 };
 
-const LABELS = {
+const LABELS: Record<'en' | 'zh', Record<string, string>> = {
   en: {
     civilizationOf: 'The Civilization of {name}',
     chronicleSubtitle:
@@ -294,33 +294,33 @@ const LABELS = {
     generatedBy: '_由 [{generator}](https://github.com/) v{version} 生成，耗时 {ms} ms。_',
     unknown: '未知',
   },
-} as const;
+};
 
 export type LabelKey = keyof typeof LABELS.en;
 
 export function label(lang: Lang, key: LabelKey, vars: Record<string, string | number> = {}): string {
-  const tpl = (LABELS[lang] ?? LABELS.en)[key];
+  const tpl = LABELS[fallbackLang(lang)][key];
   return tpl.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
 }
 
 export function translateEventTitle(type: EventType, lang: Lang): string {
-  return EVENT_COPY[lang][type]?.title ?? EVENT_COPY.en[type].title;
+  return EVENT_COPY[fallbackLang(lang)][type]?.title ?? EVENT_COPY.en[type].title;
 }
 
 export function translateEventNarrative(type: EventType, lang: Lang): string {
-  return EVENT_COPY[lang][type]?.narrative ?? EVENT_COPY.en[type].narrative;
+  return EVENT_COPY[fallbackLang(lang)][type]?.narrative ?? EVENT_COPY.en[type].narrative;
 }
 
 export function translateEraProfile(type: EventType, lang: Lang): EraProfile {
-  return ERA_PROFILE[lang][type] ?? ERA_PROFILE.en[type];
+  return ERA_PROFILE[fallbackLang(lang)][type] ?? ERA_PROFILE.en[type];
 }
 
 export function translateSeverity(sev: EventSeverity, lang: Lang): string {
-  return SEVERITY[lang][sev] ?? SEVERITY.en[sev];
+  return SEVERITY[fallbackLang(lang)][sev] ?? SEVERITY.en[sev];
 }
 
 export function translateFallbackTheme(lang: Lang): string {
-  return FALLBACK_THEME[lang] ?? FALLBACK_THEME.en;
+  return FALLBACK_THEME[fallbackLang(lang)] ?? FALLBACK_THEME.en;
 }
 
 const FALLBACK_INDEX: Record<string, number> = {
@@ -375,7 +375,7 @@ export function translateEra(
     return { name: `${profile.prefix}: ${title}`, theme: profile.theme };
   }
   const idx = FALLBACK_INDEX[era.name];
-  const fallbackArr = FALLBACK_ERA_NAMES[lang] ?? FALLBACK_ERA_NAMES.en;
+  const fallbackArr = FALLBACK_ERA_NAMES[fallbackLang(lang)] ?? FALLBACK_ERA_NAMES.en;
   if (idx !== undefined) return { name: fallbackArr[idx], theme: translateFallbackTheme(lang) };
   return { name: era.name, theme: era.theme };
 }
@@ -402,7 +402,7 @@ export function translateEvent(event: DetectedEvent, lang: Lang): DetectedEvent 
 export function composeEraSummary(era: Era, events: DetectedEvent[], lang: Lang): string {
   const stats = era.summaryStats;
   if (!stats) return era.summary;
-  const period = era.startYear === era.endYear ? `${era.startYear}` : `${era.startYear}–${era.endYear}`;
+  const period = formatEraPeriod(era);
   const dominant = era.dominantEvents
     .map((id) => events.find((e) => e.id === id))
     .filter((e): e is DetectedEvent => Boolean(e))
@@ -427,7 +427,7 @@ export function composeEraSummary(era: Era, events: DetectedEvent[], lang: Lang)
  * (English fallback) rather than mangled.
  */
 export function translateEvidence(text: string, lang: Lang): string {
-  if (lang === 'en' || !text) return text;
+  if (fallbackLang(lang) === 'en' || !text) return text;
   for (const [pattern, replacement] of EVIDENCE_PATTERNS) {
     const m = text.match(pattern);
     if (m) {

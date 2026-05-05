@@ -256,6 +256,22 @@ a {
   min-width: 64px;
 }
 
+.rs-toolbar-select {
+  min-width: 196px;
+  max-width: min(280px, 42vw);
+  border: 1px solid var(--rs-paper-border);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: var(--rs-paper);
+  color: var(--rs-ink);
+  font: inherit;
+}
+
+.rs-toolbar-select:focus {
+  outline: none;
+  border-color: var(--rs-accent);
+}
+
 .rs-main {
   padding-top: 24px;
 }

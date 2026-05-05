@@ -1,5 +1,12 @@
 import { yearOf } from './analyzer.js';
-import type { AnalyzedRepo, DetectedEvent, Era, EventType } from './types.js';
+import {
+  createEraBoundaries,
+  type EraGranularity,
+  type EraSplit,
+  eventOverlapsEra,
+  formatEraPeriod,
+} from './periods.js';
+import type { AnalyzedRepo, DetectedEvent, Era, EventType, RawCommit } from './types.js';
 
 const EVENT_TO_ERA: Record<EventType, { prefix: string; theme: string }> = {
   'initial-chaos': {
@@ -64,6 +71,10 @@ export interface EraOptions {
   /** desired era count clamp (default 3..7) */
   minEras?: number;
   maxEras?: number;
+  /** auto preserves the legacy heuristic grouping; other values force fixed time buckets */
+  split?: EraSplit;
+  /** bucket size in days when split = day */
+  dayWindow?: number;
 }
 
 export function groupIntoEras(
@@ -71,6 +82,11 @@ export function groupIntoEras(
   events: DetectedEvent[],
   opts: EraOptions = {},
 ): Era[] {
+  const split = opts.split ?? 'auto';
+  if (split !== 'auto') {
+    return groupIntoFixedEras(repo, events, split, opts.dayWindow);
+  }
+
   const minEras = opts.minEras ?? 3;
   const maxEras = opts.maxEras ?? 7;
   if (repo.commits.length === 0) return [];
@@ -93,35 +109,90 @@ export function groupIntoEras(
     const startYear = boundaries[i];
     const endYear = boundaries[i + 1] - 1;
     if (endYear < startYear) continue;
+    const startDate = `${startYear}-01-01`;
+    const endDate = `${endYear}-12-31`;
     const inEra = sortedEvents.filter((e) => overlaps(e, startYear, endYear));
-    eras.push(buildEra(i, eras.length, startYear, endYear, inEra, repo, claimedLeads));
+    eras.push(
+      buildEra(
+        i,
+        eras.length,
+        {
+          startYear,
+          endYear,
+          startDate,
+          endDate,
+          periodLabel: startYear === endYear ? `${startYear}` : `${startYear}–${endYear}`,
+          granularity: 'year',
+        },
+        inEra,
+        repo,
+        claimedLeads,
+      ),
+    );
   }
 
-  // Always make sure at least the first era covers the founding year and the last era reaches lastYear.
   if (eras.length > 0) {
     eras[0].startYear = firstYear;
+    eras[0].startDate = `${firstYear}-01-01`;
     eras[eras.length - 1].endYear = lastYear;
+    eras[eras.length - 1].endDate = `${lastYear}-12-31`;
+    for (const era of eras) {
+      era.periodLabel = formatEraPeriod(era);
+    }
   }
   return eras;
+}
+
+function groupIntoFixedEras(
+  repo: AnalyzedRepo,
+  events: DetectedEvent[],
+  split: EraGranularity,
+  dayWindow?: number,
+): Era[] {
+  if (repo.commits.length === 0) return [];
+  const boundaries = createEraBoundaries(repo.repo.firstCommitDate, repo.repo.lastCommitDate, split, dayWindow);
+  const sortedEvents = [...events].sort((a, b) => b.score - a.score || a.startYear - b.startYear);
+  const claimedLeads = new Set<string>();
+
+  return boundaries.map((boundary, index) => {
+    const eraShell: Era = {
+      id: `era-${index + 1}`,
+      name: boundary.periodLabel,
+      startYear: boundary.startYear,
+      endYear: boundary.endYear,
+      startDate: boundary.startDate,
+      endDate: boundary.endDate,
+      periodLabel: boundary.periodLabel,
+      granularity: split,
+      theme: '',
+      summary: '',
+      summaryStats: { commits: 0, contributors: 0, insertions: 0, deletions: 0 },
+      dominantEvents: [],
+      evidence: [],
+    };
+    const inEra = sortedEvents.filter((event) => eventOverlapsEra(event, eraShell));
+    return buildEra(index, index, { ...boundary, granularity: split }, inEra, repo, claimedLeads);
+  });
 }
 
 function overlaps(event: DetectedEvent, startYear: number, endYear: number): boolean {
   return event.endYear >= startYear && event.startYear <= endYear;
 }
 
-// An event is "local" to an era if it isn't a long background drone.
-// We reject events that strictly wrap the era AND span ≥1.5× its length.
-function isLocalToEra(event: DetectedEvent, startYear: number, endYear: number): boolean {
-  // An event can name an era if it "belongs" to it: either it originated
-  // inside the era's window, or its full span fits within ~1.5× the era.
-  // Without the originated-here clause, a long-running founder event
-  // (e.g. typescript-invasion that runs 2018→present) would lose its
-  // naming claim on the era where it actually began. Without the
-  // length cap, that same event would also claim every later era it
-  // happens to overlap, producing duplicate era names.
-  const eraLen = endYear - startYear + 1;
+function isLocalToEra(event: DetectedEvent, era: Pick<Era, 'startDate' | 'endDate' | 'startYear' | 'endYear'>): boolean {
+  const eventStart = parseDateStart(event.startDate);
+  const eventEnd = parseDateEnd(event.endDate);
+  const eraStart = parseDateStart(era.startDate);
+  const eraEnd = parseDateEnd(era.endDate);
+  if (Number.isFinite(eventStart) && Number.isFinite(eventEnd) && Number.isFinite(eraStart) && Number.isFinite(eraEnd)) {
+    const eraLen = Math.max(1, Math.round((eraEnd - eraStart) / DAY_MS) + 1);
+    const evtLen = Math.max(1, Math.round((eventEnd - eventStart) / DAY_MS) + 1);
+    const startsInEra = eventStart >= eraStart && eventStart <= eraEnd;
+    return startsInEra || evtLen <= eraLen * 1.5;
+  }
+  const eraLen = era.endYear - era.startYear + 1;
   const evtLen = event.endYear - event.startYear + 1;
-  const startsInEra = event.startYear >= startYear && event.startYear <= endYear;
+  const startsInEra = event.startYear >= era.startYear && event.startYear <= era.endYear;
   return startsInEra || evtLen <= eraLen * 1.5;
 }
 
@@ -133,14 +204,12 @@ function chooseBoundaries(
 ): number[] {
   const span = Math.max(1, lastYear - firstYear + 1);
   if (count <= 1) return [firstYear, lastYear + 1];
-  // Initial uniform boundaries
   const boundaries: number[] = [firstYear];
   for (let i = 1; i < count; i++) {
     boundaries.push(firstYear + Math.round((span * i) / count));
   }
   boundaries.push(lastYear + 1);
 
-  // Snap each interior boundary to the closest "epoch-defining" or "major" event start year if within ±2 years
   if (events.length > 0) {
     const anchors = events
       .filter((e) => e.severity === 'epoch-defining' || e.severity === 'major')
@@ -161,13 +230,11 @@ function chooseBoundaries(
     }
   }
 
-  // Ensure strictly increasing
   for (let i = 1; i < boundaries.length; i++) {
     if (boundaries[i] <= boundaries[i - 1]) {
       boundaries[i] = boundaries[i - 1] + 1;
     }
   }
-  // Cap last boundary to lastYear+1
   if (boundaries[boundaries.length - 1] > lastYear + 1) {
     boundaries[boundaries.length - 1] = lastYear + 1;
   }
@@ -177,33 +244,56 @@ function chooseBoundaries(
 function buildEra(
   idx: number,
   positionalIdx: number,
-  startYear: number,
-  endYear: number,
+  boundary: {
+    startYear: number;
+    endYear: number;
+    startDate: string;
+    endDate: string;
+    periodLabel: string;
+    granularity: EraGranularity;
+  },
   inEra: DetectedEvent[],
   repo: AnalyzedRepo,
   claimedLeads: Set<string>,
 ): Era {
   const dominant = [...inEra].sort((a, b) => b.score - a.score);
-  const lead = dominant.find(
-    (e) => !claimedLeads.has(e.id) && isLocalToEra(e, startYear, endYear),
-  );
+  const provisionalEra: Era = {
+    id: `era-${idx + 1}`,
+    name: boundary.periodLabel,
+    startYear: boundary.startYear,
+    endYear: boundary.endYear,
+    startDate: boundary.startDate,
+    endDate: boundary.endDate,
+    periodLabel: boundary.periodLabel,
+    granularity: boundary.granularity,
+    theme: '',
+    summary: '',
+    summaryStats: { commits: 0, contributors: 0, insertions: 0, deletions: 0 },
+    dominantEvents: [],
+    evidence: [],
+  };
+  const lead = dominant.find((e) => !claimedLeads.has(e.id) && isLocalToEra(e, provisionalEra));
   if (lead) claimedLeads.add(lead.id);
   const profile = lead ? EVENT_TO_ERA[lead.type] : undefined;
 
-  const fallbackName = fallbackEraName(positionalIdx, repo, startYear, endYear);
+  const fallbackName = fallbackEraName(positionalIdx, repo, boundary.startYear, boundary.endYear);
   const name = profile && lead ? `${profile.prefix}: ${lead.title}` : fallbackName;
   const theme = profile?.theme ?? 'a quieter chapter between bigger upheavals';
 
-  const summaryStats = computeEraStats(repo, startYear, endYear);
-  const summary = composeSummary(summaryStats, startYear, endYear, dominant);
+  const summaryStats = computeEraStats(repo, boundary.startDate, boundary.endDate);
+  const summary = composeSummary(summaryStats, boundary.periodLabel, dominant);
   const dominantEvents = dominant.slice(0, 4).map((e) => e.id);
-  const evidence = composeEraEvidence(repo, startYear, endYear, dominant);
+  const evidence = composeEraEvidence(repo, boundary.periodLabel, boundary.granularity, boundary.startDate, boundary.endDate, dominant);
 
   return {
     id: `era-${idx + 1}`,
     name,
-    startYear,
-    endYear,
+    startYear: boundary.startYear,
+    endYear: boundary.endYear,
+    startDate: boundary.startDate,
+    endDate: boundary.endDate,
+    periodLabel: boundary.periodLabel,
+    granularity: boundary.granularity,
     theme,
     summary,
     summaryStats,
@@ -215,19 +305,23 @@ function buildEra(
 
 function computeEraStats(
   repo: AnalyzedRepo,
-  startYear: number,
-  endYear: number,
+  startDate: string,
+  endDate: string,
 ): { commits: number; contributors: number; insertions: number; deletions: number } {
-  const yearStats = repo.yearly.filter((y) => y.year >= startYear && y.year <= endYear);
-  const commits = yearStats.reduce((sum, y) => sum + y.commits, 0);
-  const insertions = yearStats.reduce((sum, y) => sum + y.insertions, 0);
-  const deletions = yearStats.reduce((sum, y) => sum + y.deletions, 0);
+  const start = parseDateStart(startDate);
+  const end = parseDateEnd(endDate);
   const authors = new Set<string>();
-  for (const c of repo.commits) {
-    const y = yearOf(c.date);
-    if (y >= startYear && y <= endYear && c.authorEmail) {
-      authors.add(c.authorEmail.toLowerCase());
-    }
+  let commits = 0;
+  let insertions = 0;
+  let deletions = 0;
+
+  for (const commit of repo.commits) {
+    const time = parseDateStart(commit.date);
+    if (!Number.isFinite(time) || time < start || time > end) continue;
+    commits += 1;
+    insertions += commit.insertions;
+    deletions += commit.deletions;
+    if (commit.authorEmail) authors.add(commit.authorEmail.toLowerCase());
   }
   return { commits, contributors: authors.size, insertions, deletions };
 }
@@ -261,32 +355,62 @@ function fallbackEraName(
 
 function composeSummary(
   stats: { commits: number; contributors: number; insertions: number; deletions: number },
-  startYear: number,
-  endYear: number,
+  periodLabel: string,
   events: DetectedEvent[],
 ): string {
-  const period = startYear === endYear ? `${startYear}` : `${startYear}–${endYear}`;
   const eventBit =
     events.length > 0
       ? `Defining moments: ${events.slice(0, 3).map((e) => e.title).join(', ')}.`
       : 'No defining heuristic events landed in this stretch — the chronicle ran quiet.';
-  return `${period}: ${stats.commits.toLocaleString()} commits, ${stats.contributors} contributors, +${stats.insertions.toLocaleString()} / -${stats.deletions.toLocaleString()} lines. ${eventBit}`;
+  return `${periodLabel}: ${stats.commits.toLocaleString()} commits, ${stats.contributors} contributors, +${stats.insertions.toLocaleString()} / -${stats.deletions.toLocaleString()} lines. ${eventBit}`;
 }
 
 function composeEraEvidence(
   repo: AnalyzedRepo,
-  startYear: number,
-  endYear: number,
+  periodLabel: string,
+  granularity: EraGranularity,
+  startDate: string,
+  endDate: string,
   events: DetectedEvent[],
 ): string[] {
   const evidence: string[] = [];
-  const yearStats = repo.yearly.filter((y) => y.year >= startYear && y.year <= endYear);
-  const commits = yearStats.reduce((sum, y) => sum + y.commits, 0);
-  evidence.push(
-    `Spanned ${endYear - startYear + 1} year(s) with ${commits.toLocaleString()} commits`,
-  );
+  const commits = repo.commits.filter((commit) => isCommitInRange(commit, startDate, endDate)).length;
+  evidence.push(`Covered ${periodLabel} (${granularity}) with ${commits.toLocaleString()} commits`);
   for (const e of events.slice(0, 3)) {
-    evidence.push(`${e.title} (${e.startYear}${e.endYear !== e.startYear ? `–${e.endYear}` : ''}) — ${e.evidence[0] ?? e.narrative}`);
+    evidence.push(`${e.title} (${eventDateRange(e)}) — ${e.evidence[0] ?? e.narrative}`);
   }
   return evidence;
+}
+
+function isCommitInRange(commit: RawCommit, startDate: string, endDate: string): boolean {
+  const time = parseDateStart(commit.date);
+  return time >= parseDateStart(startDate) && time <= parseDateEnd(endDate);
+}
+
+function eventDateRange(event: DetectedEvent): string {
+  const start = shortDate(event.startDate);
+  const end = shortDate(event.endDate);
+  if (start && end) return start === end ? start : `${start}–${end}`;
+  return event.startYear === event.endYear ? String(event.startYear) : `${event.startYear}–${event.endYear}`;
+}
+
+const DAY_MS = 86_400_000;
+
+function parseDateStart(iso: string | undefined): number {
+  if (!iso) return Number.NaN;
+  const withTime = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${iso}T00:00:00Z` : iso;
+  return new Date(withTime).getTime();
+}
+
+function parseDateEnd(iso: string | undefined): number {
+  if (!iso) return Number.NaN;
+  const withTime = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${iso}T23:59:59Z` : iso;
+  return new Date(withTime).getTime();
+}
+
+function shortDate(iso: string | undefined): string | undefined {
+  if (!iso) return undefined;
+  const parsed = new Date(iso);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  return parsed.toISOString().slice(0, 10);
 }

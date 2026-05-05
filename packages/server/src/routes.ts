@@ -1,13 +1,12 @@
 import type { FastifyInstance } from 'fastify';
-import { renderJson, renderMarkdown, renderSvg, type Lang, type SvgTheme } from '@repo-saga/renderer';
+import { normalizeLang, renderJson, renderMarkdown, renderSvg, type Lang, type SvgTheme } from '@repo-saga/renderer';
 import type { Saga } from '@repo-saga/core';
 import type { JobStore } from './jobs.js';
 
 const VALID_THEMES: SvgTheme[] = ['epic', 'dark-fantasy', 'academic', 'minimal'];
-const VALID_LANGS: Lang[] = ['en', 'zh'];
 
 function pickLang(raw: string | undefined): Lang {
-  return (VALID_LANGS as string[]).includes(raw ?? '') ? (raw as Lang) : 'en';
+  return normalizeLang(raw) ?? 'en';
 }
 
 export interface RouteOptions {

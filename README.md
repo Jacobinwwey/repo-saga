@@ -52,7 +52,9 @@ Then run the CLI directly:
 ```bash
 node packages/cli/dist/index.js                              # opens the local web UI
 node packages/cli/dist/index.js https://github.com/owner/repo
-node packages/cli/dist/index.js ./my-project --theme academic --lang zh --out ./out
+node packages/cli/dist/index.js ./my-project --theme academic --lang zh-Hant --out ./out
+node packages/cli/dist/index.js ./my-project --era-split quarter
+node packages/cli/dist/index.js ./my-project --era-split day --era-days 30
 ```
 
 If you'd like a shorter command, alias it:
@@ -75,6 +77,10 @@ Requires Node.js 18.17+, `pnpm`, and `git` available on `$PATH`.
 | `repo-saga <repo> --no-server`                             | Just emit the files; don't start the web server.                                                  |
 | `repo-saga <repo> --out ./output`                          | Write outputs into `./output`.                                                                    |
 | `repo-saga <repo> --theme dark-fantasy`                    | Choose an SVG theme (`epic`, `dark-fantasy`, `academic`, `minimal`).                              |
+| `repo-saga <repo> --lang fr`                               | Render the chronicle in any supported locale (`en`, `zh`, `zh-Hant`, and the README_* set).      |
+| `repo-saga <repo> --era-split quarter`                     | Force fixed quarter-by-quarter eras (`2024-Q1`, `2024-Q2`, ...).                                  |
+| `repo-saga <repo> --era-split month`                       | Force fixed month-by-month eras (`2024-01`, `2024-02`, ...).                                      |
+| `repo-saga <repo> --era-split day --era-days 30`           | Force rolling fixed-size day buckets (for example 30-day eras).                                   |
 | `repo-saga <repo> --max-commits 10000`                     | Cap how many commits to read on huge repos.                                                       |
 | `repo-saga <repo> --port 5555`                             | Pin the web server port.                                                                          |
 | `repo-saga --help`                                         | Show all flags.                                                                                   |
@@ -86,6 +92,8 @@ Requires Node.js 18.17+, `pnpm`, and `git` available on `$PATH`.
 - A local path to a directory containing a `.git` folder
 
 When you give a remote URL, `repo-saga` clones it into `$TMPDIR/repo-saga-cache` (configurable via `--cache-dir`).
+
+Supported locale codes currently match the multilingual README footprint used in large plugin repos: `en`, `ar`, `bn`, `cs`, `da`, `de`, `el`, `es`, `fi`, `fr`, `he`, `hi`, `hu`, `id`, `it`, `ja`, `ko`, `ms`, `nl`, `no`, `pl`, `pt`, `ro`, `ru`, `sv`, `th`, `tr`, `uk`, `vi`, `zh`, and `zh-Hant`. English and Simplified Chinese have full copy tables; other locales fall back cleanly to English copy while still honoring the selected locale code end-to-end.
 
 ## Outputs
 

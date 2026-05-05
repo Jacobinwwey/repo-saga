@@ -1,6 +1,15 @@
 #!/usr/bin/env node
-import { generateSaga, type ProgressEvent, type Saga } from '@repo-saga/core';
-import { renderJson, renderMarkdown, renderSvg, translateEra, type Lang, type SvgTheme } from '@repo-saga/renderer';
+import { formatEraPeriod, generateSaga, normalizeEraSplit, type EraSplit, type ProgressEvent, type Saga } from '@repo-saga/core';
+import {
+  ALL_LANGS,
+  normalizeLang,
+  renderJson,
+  renderMarkdown,
+  renderSvg,
+  translateEra,
+  type Lang,
+  type SvgTheme,
+} from '@repo-saga/renderer';
 import { startServer } from '@repo-saga/server';
 import kleur from 'kleur';
 import open from 'open';
@@ -18,13 +27,15 @@ export interface Args {
   port?: number;
   maxCommits?: number;
   cacheDir?: string;
+  eraSplit: EraSplit;
+  eraDays?: number;
   help?: boolean;
   version?: boolean;
   json?: boolean;
 }
 
 const VALID_THEMES: SvgTheme[] = ['epic', 'dark-fantasy', 'academic', 'minimal'];
-const VALID_LANGS: Lang[] = ['en', 'zh'];
+const VALID_LANGS: Lang[] = ALL_LANGS;
 
 export function parseArgs(argv: string[]): Args {
   const args: Args = {
@@ -33,6 +44,7 @@ export function parseArgs(argv: string[]): Args {
     lang: 'en',
     open: true,
     server: true,
+    eraSplit: 'auto',
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -47,11 +59,19 @@ export function parseArgs(argv: string[]): Args {
       }
       args.theme = t;
     } else if (a === '--lang' || a === '-l') {
-      const l = argv[++i] as Lang;
-      if (!VALID_LANGS.includes(l)) {
-        die(`Invalid --lang "${l}". Allowed: ${VALID_LANGS.join(', ')}`);
+      const l = normalizeLang(argv[++i]);
+      if (!l) {
+        die(`Invalid --lang "${argv[i]}". Allowed: ${VALID_LANGS.join(', ')}`);
       }
       args.lang = l;
+    } else if (a === '--era-split') {
+      const split = normalizeEraSplit(argv[++i]);
+      if (!split) {
+        die('Invalid --era-split. Allowed: auto, year, quarter, month, day');
+      }
+      args.eraSplit = split;
+    } else if (a === '--era-days') {
+      args.eraDays = parseInt(argv[++i], 10);
     } else if (a === '--port' || a === '-p') {
       args.port = parseInt(argv[++i], 10);
     } else if (a === '--max-commits') {
@@ -72,6 +92,12 @@ export function parseArgs(argv: string[]): Args {
 
 export function validateArgs(args: Args): string | undefined {
   if (args.json && args.server) return '--json is only supported with --no-server';
+  if (args.eraSplit === 'day' && (!args.eraDays || args.eraDays < 1)) {
+    return '--era-days must be a positive integer when --era-split day is used';
+  }
+  if (args.eraSplit !== 'day' && args.eraDays !== undefined && args.eraDays < 1) {
+    return '--era-days must be a positive integer';
+  }
   return undefined;
 }
 
@@ -95,6 +121,8 @@ function help() {
     '  --out, -o <dir>          Output directory for saga.json/saga.md/saga.svg (default cwd)',
     `  --theme, -t <name>       SVG theme: ${VALID_THEMES.join(' | ')} (default epic)`,
     `  --lang, -l <code>        Output language: ${VALID_LANGS.join(' | ')} (default en)`,
+    '  --era-split <mode>      Era grouping: auto | year | quarter | month | day (default auto)',
+    '  --era-days <num>        Day-window size when --era-split day is used',
     '  --port, -p <num>         Port for the local server (default: random)',
     '  --max-commits <num>      Limit commits read for very large repos',
     '  --cache-dir <path>       Where to clone remote repos (default: $TMPDIR/repo-saga-cache)',
@@ -184,6 +212,8 @@ async function main() {
     onProgress: progressLogger(info),
     maxCommits: args.maxCommits,
     cacheDir: args.cacheDir,
+    eraSplit: args.eraSplit,
+    eraDays: args.eraDays,
   });
 
   if (args.json && !args.server) {
@@ -202,7 +232,7 @@ async function main() {
   );
   for (const era of saga.eras) {
     const name = translateEra(era, saga.events, args.lang).name;
-    info(`  ${kleur.cyan(`${era.startYear}–${era.endYear}`)}  ${kleur.bold(name)}`);
+    info(`  ${kleur.cyan(formatEraPeriod(era))}  ${kleur.bold(name)}`);
   }
 
   if (!args.server) return;
