@@ -26,4 +26,13 @@ describe('CLI args', () => {
     expect(lines[0]).toContain('Resolving source');
     expect(lines[1]).toContain('Saga complete');
   });
+
+  it('accepts README locale language codes used by downstream projects', () => {
+    const locales = ['ar', 'ja', 'vi', 'zh_Hant'];
+
+    for (const locale of locales) {
+      expect(() => parseArgs(['./repo', '--lang', locale])).not.toThrow();
+      expect(parseArgs(['./repo', '--lang', locale]).lang).toBe(locale);
+    }
+  });
 });

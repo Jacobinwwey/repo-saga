@@ -24,7 +24,39 @@ export interface Args {
 }
 
 const VALID_THEMES: SvgTheme[] = ['epic', 'dark-fantasy', 'academic', 'minimal'];
-const VALID_LANGS: Lang[] = ['en', 'zh'];
+const VALID_LANGS: Lang[] = [
+  'en',
+  'ar',
+  'bn',
+  'cs',
+  'da',
+  'de',
+  'el',
+  'es',
+  'fi',
+  'fr',
+  'he',
+  'hi',
+  'hu',
+  'id',
+  'it',
+  'ja',
+  'ko',
+  'ms',
+  'nl',
+  'no',
+  'pl',
+  'pt',
+  'ro',
+  'ru',
+  'sv',
+  'th',
+  'tr',
+  'uk',
+  'vi',
+  'zh',
+  'zh_Hant',
+];
 
 export function parseArgs(argv: string[]): Args {
   const args: Args = {
