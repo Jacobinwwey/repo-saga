@@ -88,12 +88,13 @@ export function groupIntoEras(
   const boundaries = chooseBoundaries(firstYear, lastYear, target, sortedEvents);
 
   const eras: Era[] = [];
+  const claimedLeads = new Set<string>();
   for (let i = 0; i < boundaries.length - 1; i++) {
     const startYear = boundaries[i];
     const endYear = boundaries[i + 1] - 1;
     if (endYear < startYear) continue;
     const inEra = sortedEvents.filter((e) => overlaps(e, startYear, endYear));
-    eras.push(buildEra(i, eras.length, startYear, endYear, inEra, repo));
+    eras.push(buildEra(i, eras.length, startYear, endYear, inEra, repo, claimedLeads));
   }
 
   // Always make sure at least the first era covers the founding year and the last era reaches lastYear.
@@ -111,10 +112,17 @@ function overlaps(event: DetectedEvent, startYear: number, endYear: number): boo
 // An event is "local" to an era if it isn't a long background drone.
 // We reject events that strictly wrap the era AND span ≥1.5× its length.
 function isLocalToEra(event: DetectedEvent, startYear: number, endYear: number): boolean {
+  // An event can name an era if it "belongs" to it: either it originated
+  // inside the era's window, or its full span fits within ~1.5× the era.
+  // Without the originated-here clause, a long-running founder event
+  // (e.g. typescript-invasion that runs 2018→present) would lose its
+  // naming claim on the era where it actually began. Without the
+  // length cap, that same event would also claim every later era it
+  // happens to overlap, producing duplicate era names.
   const eraLen = endYear - startYear + 1;
   const evtLen = event.endYear - event.startYear + 1;
-  const wraps = event.startYear < startYear && event.endYear > endYear;
-  return !(wraps && evtLen >= eraLen * 1.5);
+  const startsInEra = event.startYear >= startYear && event.startYear <= endYear;
+  return startsInEra || evtLen <= eraLen * 1.5;
 }
 
 function chooseBoundaries(
@@ -173,11 +181,13 @@ function buildEra(
   endYear: number,
   inEra: DetectedEvent[],
   repo: AnalyzedRepo,
+  claimedLeads: Set<string>,
 ): Era {
   const dominant = [...inEra].sort((a, b) => b.score - a.score);
-  // Pick a "local" lead event to name the era — skip events that wrap this era
-  // and span much more than it (e.g. a 10-year Release Empire over a 2-year era).
-  const lead = dominant.find((e) => isLocalToEra(e, startYear, endYear));
+  const lead = dominant.find(
+    (e) => !claimedLeads.has(e.id) && isLocalToEra(e, startYear, endYear),
+  );
+  if (lead) claimedLeads.add(lead.id);
   const profile = lead ? EVENT_TO_ERA[lead.type] : undefined;
 
   const fallbackName = fallbackEraName(positionalIdx, repo, startYear, endYear);
@@ -198,6 +208,7 @@ function buildEra(
     summary,
     summaryStats,
     dominantEvents,
+    leadEventId: lead?.id,
     evidence,
   };
 }

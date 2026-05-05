@@ -181,8 +181,34 @@ export interface DetectedEvent {
   narrative: string;
   /** array of bullet-style evidence strings */
   evidence: string[];
+  /** Why this detector emitted the event, expressed as UI-friendly telemetry. */
+  debug?: DetectorDebugInfo;
   /** sortable score: confidence * severity weight */
   score: number;
+}
+
+export interface DetectorDebugInfo {
+  /** detector that produced this event */
+  detector: EventType;
+  /** concise positive rule that was satisfied */
+  positive: string;
+  /** optional nearby miss/threshold gap for explaining non-events */
+  negative?: string;
+  /** key threshold facts surfaced in the UI */
+  metrics: DetectorDebugMetric[];
+}
+
+export interface DetectorDebugMetric {
+  label: string;
+  value: string | number;
+  threshold?: string | number;
+  delta?: string | number;
+}
+
+export interface EvidenceLink {
+  label: string;
+  url: string;
+  kind: 'commit' | 'compare' | 'search' | 'file';
 }
 
 export interface Era {
@@ -200,6 +226,14 @@ export interface Era {
     deletions: number;
   };
   dominantEvents: string[];
+  /**
+   * The event chosen at era-build time to provide this era's name profile
+   * (e.g. "Migration Era: TypeScript Invasion"). At most one era references
+   * any given event, so renderers/translators must honor this rather than
+   * reselect a lead from `dominantEvents` (which would duplicate names across
+   * eras for long-running events).
+   */
+  leadEventId?: string;
   evidence: string[];
 }
 
@@ -211,6 +245,33 @@ export interface SagaStats {
   testRatioByYear: Record<string, number>;
   languagesByYear: Record<string, Record<string, number>>;
   topContributors: Array<{ name: string; email: string; commits: number }>;
+  activeFilesByYear?: Record<string, string[]>;
+  activeContributorsByYear?: Record<string, Array<{ name: string; email: string; commits: number }>>;
+  activeDetectorEventsByYear?: Record<string, string[]>;
+  timeTravelSnapshots?: TimeTravelSnapshot[];
+  evidenceLinks?: Record<string, EvidenceLink[]>;
+  contributorTimeline?: Record<
+    string,
+    {
+      name: string;
+      email: string;
+      firstYear: number;
+      lastYear: number;
+      commitsByYear: Record<string, number>;
+      topFiles: string[];
+    }
+  >;
+}
+
+export interface TimeTravelSnapshot {
+  /** ISO date (YYYY-MM-DD) at the centre of the ±30 day window. */
+  date: string;
+  windowStart: string;
+  windowEnd: string;
+  commits: number;
+  activeFiles: string[];
+  activeContributors: Array<{ name: string; email: string; commits: number }>;
+  activeDetectorEvents: string[];
 }
 
 export interface Saga {

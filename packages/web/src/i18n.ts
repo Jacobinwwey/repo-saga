@@ -51,6 +51,36 @@ export interface UiCopy {
     noEraSelected: string;
     noEvents: string;
     confidence: string;
+    workspaceLabel: string;
+    workspaceKicker: string;
+    workspaceTitle: string;
+    workspaceBody: string;
+    timeTravel: string;
+    timeTravelSubtitle: string;
+    activeCommits: string;
+    activeContributors: string;
+    activeDetectorEvents: string;
+    activeFiles: string;
+    contributorMode: string;
+    allContributors: string;
+    contributorVoice: string;
+    perspectiveNote: string;
+    contributorNarrativePrefix: string;
+    yearCommits: string;
+    activeYears: string;
+    touchedFiles: string;
+    topContributorsAtYear: string;
+    evidenceLinks: string;
+    evidenceLinkKinds: Record<'commit' | 'compare' | 'search' | 'file', string>;
+    showDebug: string;
+    hideDebug: string;
+    positiveRoute: string;
+    negativeRoute: string;
+    threshold: string;
+    distance: string;
+    none: string;
+    debugMetricLabels: Record<string, string>;
+    debugValueLabels: Record<string, string>;
     severityLabels: Record<EventSeverity, string>;
   };
   footer: string;
@@ -134,6 +164,42 @@ export const UI_COPY: Record<UiLang, UiCopy> = {
       noEraSelected: 'No era selected',
       noEvents: 'No detected events in this era.',
       confidence: 'confidence',
+      workspaceLabel: 'Interactive chronicle controls',
+      workspaceKicker: 'Interactive atlas',
+      workspaceTitle: 'Travel the repo timeline without losing the evidence trail',
+      workspaceBody:
+        'Use the date slider for active files, active contributors, and live detector events; switch perspective to rewrite the saga from one contributor’s point of view.',
+      timeTravel: 'Time travel',
+      timeTravelSubtitle: '{date} snapshot · ±30 days',
+      activeCommits: 'active commits',
+      activeContributors: 'active contributors',
+      activeDetectorEvents: 'active detector events',
+      activeFiles: 'active files top 10',
+      contributorMode: 'Contributor view',
+      allContributors: 'All contributors',
+      contributorVoice: 'You joined in {firstYear}; across this chronicle you made {commits} commits.',
+      perspectiveNote: 'Perspective: {name}. “You joined in {firstYear}…” is applied to overlapping events.',
+      contributorNarrativePrefix: 'You joined in {firstYear}. {narrative}',
+      yearCommits: 'commits in selected year',
+      activeYears: 'active years',
+      touchedFiles: 'frequent files',
+      topContributorsAtYear: 'Top contributors in {year}',
+      evidenceLinks: 'Evidence links',
+      evidenceLinkKinds: {
+        commit: 'commit',
+        compare: 'compare',
+        search: 'history',
+        file: 'file',
+      },
+      showDebug: 'Why this event?',
+      hideDebug: 'Hide debug',
+      positiveRoute: 'Positive route:',
+      negativeRoute: 'Negative route:',
+      threshold: 'threshold',
+      distance: 'distance',
+      none: 'none detected',
+      debugMetricLabels: {},
+      debugValueLabels: {},
       severityLabels: {
         minor: 'minor',
         notable: 'notable',
@@ -214,6 +280,88 @@ export const UI_COPY: Record<UiLang, UiCopy> = {
       noEraSelected: '未选择纪元',
       noEvents: '这个纪元没有检测到事件。',
       confidence: '置信度',
+      workspaceLabel: '编年史交互控制',
+      workspaceKicker: '交互星图',
+      workspaceTitle: '拖动任意日期，直接看见 D ±30 天的文件、贡献者和检测器事件',
+      workspaceBody:
+        '时间旅行滑块会展示该日期 ±30 天语义下的年度快照：活跃文件 top10、活跃贡献者、当时正在发生的 detector 事件；也可以切到某位贡献者视角重写叙事。',
+      timeTravel: '时间旅行',
+      timeTravelSubtitle: '{date} 快照 · ±30 天',
+      activeCommits: '活跃提交',
+      activeContributors: '活跃贡献者',
+      activeDetectorEvents: '正在发生的事件',
+      activeFiles: '活跃文件 top10',
+      contributorMode: '角色视角',
+      allContributors: '全部贡献者',
+      contributorVoice: '你在 {firstYear} 年加入；整段编年史里你贡献了 {commits} 次提交。',
+      perspectiveNote: '当前视角：{name}。与 ta 时间线重叠的事件会以“你在 {firstYear} 年加入……”重写。',
+      contributorNarrativePrefix: '你在 {firstYear} 年加入。{narrative}',
+      yearCommits: '所选年份提交',
+      activeYears: '活跃年份',
+      touchedFiles: '常触及文件',
+      topContributorsAtYear: '{year} 年贡献者 top',
+      evidenceLinks: '证据链接',
+      evidenceLinkKinds: {
+        commit: 'commit',
+        compare: 'compare',
+        search: '历史',
+        file: '文件',
+      },
+      showDebug: '为什么触发？',
+      hideDebug: '收起调试',
+      positiveRoute: '正向路径：',
+      negativeRoute: '负向路径：',
+      threshold: '阈值',
+      distance: '距离',
+      none: '暂无',
+      debugMetricLabels: {
+        'founding-window commits': '奠基窗口提交数',
+        'founding-window days': '奠基窗口天数',
+        'early files touched': '早期触及文件数',
+        'first TS-signal year': '首个 TS 信号年份',
+        'majority year': '过半年份',
+        'latest TS insertions': '最近 TS 插入行',
+        'latest JS insertions': '最近 JS 插入行',
+        'files in 90-day window': '90 天窗口文件数',
+        'renamed files': '重命名文件数',
+        'purged files': '清理文件数',
+        'famine span': '饥荒跨度',
+        'worst test ratio': '最低测试比例',
+        'worst year': '最低年份',
+        'test tool signals': '测试工具信号数',
+        'surge from': '跃升前',
+        'surge to': '跃升后',
+        'lint signals': 'Lint 信号数',
+        'severity upgrade': '强度升级',
+        'container/IaC signals': '容器/IaC 信号数',
+        'workspace signals': '工作区信号数',
+        'packages/ present': '存在 packages/',
+        'apps/ present': '存在 apps/',
+        'largest lockfile churn': '最大 lockfile 变动',
+        'heavy dependency commits': '重依赖变动提交数',
+        'founder candidates': '创始人候选数',
+        'exited founders': '离开的创始人',
+        'last-quartile cutoff': '最后四分位切点',
+        'late contributors surfaced': '后期贡献者数',
+        'newcomer threshold': '新人阈值',
+        'AI keyword hits': 'AI 关键词命中',
+        'first hit': '首次命中',
+        'bug-themed commits': 'Bug 主题提交',
+        'bug-themed ratio': 'Bug 主题比例',
+        'month total commits': '该月总提交',
+        'dated tags': '带日期 tag 数',
+        'SemVer-ish tags': 'SemVer 风格 tag',
+        'release span': '发布跨度',
+      },
+      debugValueLabels: {
+        'not crossed': '未越过',
+        'n/a': '不适用',
+        'yes': '是',
+        'no': '否',
+        'major': '重大',
+        'notable': '显著',
+        'minor': '轻微',
+      },
       severityLabels: {
         minor: '轻微',
         notable: '显著',

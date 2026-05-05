@@ -355,9 +355,20 @@ export function translateEra(
   events: DetectedEvent[],
   lang: Lang,
 ): { name: string; theme: string } {
-  const lead = era.dominantEvents
-    .map((id) => events.find((e) => e.id === id))
-    .find((e): e is DetectedEvent => Boolean(e && isLocalToEra(e, era)));
+  // Honor the lead chosen at era-build time. If the era has `leadEventId`
+  // (modern build), use it strictly — undefined means "no event named this
+  // era, use fallback", because reselecting from dominantEvents would
+  // reintroduce the cross-era duplicate-naming bug. For legacy sagas
+  // without leadEventId, fall back to the old reselection behavior so
+  // pre-existing saga.json files still translate.
+  const lead =
+    'leadEventId' in era
+      ? era.leadEventId
+        ? events.find((e) => e.id === era.leadEventId)
+        : undefined
+      : era.dominantEvents
+          .map((id) => events.find((e) => e.id === id))
+          .find((e): e is DetectedEvent => Boolean(e && isLocalToEra(e, era)));
   if (lead) {
     const profile = translateEraProfile(lead.type, lang);
     const title = translateEventTitle(lead.type, lang);

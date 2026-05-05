@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildAnalyzedRepo } from '../src/analyzer.js';
+import { buildSagaStats } from '../src/index.js';
 import { runDetectors } from '../src/detectors.js';
 import { groupIntoEras } from '../src/eras.js';
 import type { RawCommit } from '../src/types.js';
@@ -218,6 +219,44 @@ describe('AI Priesthood detector word boundaries', () => {
   });
 });
 
+describe('time travel stats', () => {
+  it('builds daily D ± 30 day snapshots instead of yearly or weekly buckets', () => {
+    const commits: RawCommit[] = [
+      commit('a'.repeat(40), '2024-01-01T00:00:00Z', 'release: new year', [
+        { path: 'src/january.ts', insertions: 10, deletions: 0 },
+      ]),
+      commit('b'.repeat(40), '2024-01-04T00:00:00Z', 'fix: early january', [
+        { path: 'src/january.ts', insertions: 4, deletions: 1 },
+      ]),
+      commit('c'.repeat(40), '2024-03-15T00:00:00Z', 'release: spring', [
+        { path: 'src/march.ts', insertions: 20, deletions: 2 },
+      ]),
+    ];
+    const analyzed = buildAnalyzedRepo({
+      repoName: 'sample',
+      source: '/sample',
+      resolvedPath: '/sample',
+      commits,
+      tags: [],
+    });
+    const stats = buildSagaStats(analyzed, []);
+    const snapshots = stats.timeTravelSnapshots ?? [];
+
+    expect(snapshots.map((snapshot) => snapshot.date)).toContain('2024-01-02');
+    expect(snapshots.map((snapshot) => snapshot.date)).toContain('2024-01-03');
+    expect(snapshots.map((snapshot) => snapshot.date)).toContain('2024-03-15');
+
+    const jan02 = snapshots.find((snapshot) => snapshot.date === '2024-01-02');
+    expect(jan02?.windowStart).toBe('2023-12-03');
+    expect(jan02?.windowEnd).toBe('2024-02-01');
+    expect(jan02?.commits).toBe(2);
+    expect(jan02?.activeFiles).toContain('src/january.ts');
+
+    const feb10 = snapshots.find((snapshot) => snapshot.date === '2024-02-10');
+    expect(feb10?.commits).toBe(0);
+  });
+});
+
 describe('eras grouping', () => {
   it('returns at least one era and respects span bounds', () => {
     const commits: RawCommit[] = [];
@@ -308,6 +347,9 @@ describe('eras grouping', () => {
     // Release Empire spans the whole history; not every era should inherit its name
     const releaseEmpireNamed = eras.filter((e) => e.name.includes('Release Empire'));
     expect(releaseEmpireNamed.length).toBeLessThan(eras.length);
+    // No long-running event should name more than one era — era names must be distinct.
+    const names = eras.map((e) => e.name);
+    expect(new Set(names).size).toBe(names.length);
   });
 
   it('handles a quiet repo gracefully', () => {

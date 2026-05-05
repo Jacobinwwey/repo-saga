@@ -9,6 +9,8 @@ import {
 } from './i18n.js';
 import { RASTER_ICON_DATA, type RasterIconName } from './raster-assets.js';
 
+const usedRasterIcons = new Set<RasterIconName>();
+
 export type SvgTheme = 'epic' | 'dark-fantasy' | 'academic' | 'minimal';
 
 interface ThemePalette {
@@ -110,47 +112,39 @@ export function renderSvg(saga: Saga, opts: SvgOptions = {}): string {
   const totalH = headerH + timelineH + eras.length * eraH + footerH;
   const margin = 32;
 
-  const sb: string[] = [];
-  sb.push(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${totalH}" width="${width}" height="${totalH}" font-family=${attr(theme.fontBody)}>`,
-  );
-  sb.push(makeDefs(theme));
-  // background
-  sb.push(`<rect width="100%" height="100%" fill="${theme.bg}"/>`);
+  usedRasterIcons.clear();
+  const body: string[] = [];
+  body.push(`<rect width="100%" height="100%" fill="${theme.bg}"/>`);
 
-  // outer parchment frame
-  sb.push(
+  body.push(
     `<rect x="${margin / 2}" y="${margin / 2}" width="${width - margin}" height="${totalH - margin}" rx="12" ry="12" fill="${theme.paper}" stroke="${theme.paperBorder}" stroke-width="2"/>`,
   );
-  sb.push(
+  body.push(
     `<rect x="${margin / 2}" y="${margin / 2}" width="${width - margin}" height="${totalH - margin}" rx="12" ry="12" fill="url(#paperGrain)" opacity="0.32"/>`,
   );
-  sb.push(renderCartography(theme, width, totalH, margin));
+  body.push(renderCartography(theme, width, totalH, margin));
 
-  // decorative inner border
-  sb.push(
+  body.push(
     `<rect x="${margin}" y="${margin}" width="${width - margin * 2}" height="${totalH - margin * 2}" rx="6" ry="6" fill="none" stroke="${theme.muted}" stroke-width="1" stroke-dasharray="2 6" opacity="0.6"/>`,
   );
-  sb.push(renderCornerFlourishes(width, totalH, margin));
+  body.push(renderCornerFlourishes(width, totalH, margin));
+  body.push(renderHeader(saga, theme, width, headerH, margin, lang));
+  body.push(renderTimelineStrip(saga, eras as Era[], theme, width, margin, headerH, timelineH, lang));
 
-  // header
-  sb.push(renderHeader(saga, theme, width, headerH, margin, lang));
-
-  // year axis / timeline
-  sb.push(renderTimelineStrip(saga, eras as Era[], theme, width, margin, headerH, timelineH, lang));
-
-  // era cards
   let y = headerH + timelineH;
   for (let i = 0; i < eras.length; i++) {
-    sb.push(renderEra(eras[i], saga.events, theme, width, margin, y, eraH, i, maxEvents, lang));
+    body.push(renderEra(eras[i], saga.events, theme, width, margin, y, eraH, i, maxEvents, lang));
     y += eraH;
   }
+  body.push(renderFooter(saga, theme, width, totalH, margin, footerH, lang));
 
-  // footer
-  sb.push(renderFooter(saga, theme, width, totalH, margin, footerH, lang));
-
-  sb.push('</svg>');
-  return sb.join('\n');
+  // Assemble at the end so makeDefs sees which raster icons were actually used.
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${totalH}" width="${width}" height="${totalH}" font-family=${attr(theme.fontBody)}>`,
+    makeDefs(theme),
+    ...body,
+    '</svg>',
+  ].join('\n');
 }
 
 function defaultEra(saga: Saga): Era {
@@ -191,6 +185,10 @@ function makeDefs(theme: ThemePalette): string {
     `<stop offset="50%" stop-color="${theme.muted}" stop-opacity="0.65"/>`,
     `<stop offset="100%" stop-color="${theme.muted}" stop-opacity="0.0"/>`,
     `</linearGradient>`,
+    ...[...usedRasterIcons].map(
+      (icon) =>
+        `<symbol id="raster-${icon}" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><image href="${RASTER_ICON_DATA[icon]}" width="100" height="100"/></symbol>`,
+    ),
     '</defs>',
   ].join('');
 }
@@ -294,7 +292,8 @@ function renderRasterIcon(
   height: number,
   opacity: number,
 ): string {
-  return `<image href="${RASTER_ICON_DATA[icon]}" x="${x}" y="${y}" width="${width}" height="${height}" opacity="${opacity}" preserveAspectRatio="xMidYMid meet"/>`;
+  usedRasterIcons.add(icon);
+  return `<use href="#raster-${icon}" x="${x}" y="${y}" width="${width}" height="${height}" opacity="${opacity}"/>`;
 }
 
 function renderMetricBlock(

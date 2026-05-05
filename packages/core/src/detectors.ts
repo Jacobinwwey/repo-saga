@@ -30,6 +30,7 @@ export function makeEvent(input: {
   confidence: number;
   narrative: string;
   evidence: string[];
+  debug?: DetectedEvent['debug'];
   idSuffix?: string;
 }): DetectedEvent {
   const startYear = yearOf(input.startDate);
@@ -48,6 +49,7 @@ export function makeEvent(input: {
     confidence: clamp01(input.confidence),
     narrative: input.narrative,
     evidence: input.evidence,
+    debug: input.debug,
     score,
   };
 }
@@ -108,6 +110,15 @@ const initialChaosDetector: Detector = {
         narrative:
           'The first tribes gather around a fragile structure of files and hope. Foundational artefacts appear in rapid succession.',
         evidence,
+        debug: {
+          detector: 'initial-chaos',
+          positive: `Founding window crossed the ${formatNumber(5)} commit threshold.`,
+          metrics: [
+            { label: 'founding-window commits', value: within.length, threshold: '>= 5' },
+            { label: 'founding-window days', value: Math.max(1, days), threshold: '<= 60' },
+            { label: 'early files touched', value: filesTouched.size },
+          ],
+        },
       }),
     ];
   },
@@ -184,6 +195,25 @@ const typescriptInvasionDetector: Detector = {
         narrative:
           'A migration of types swept across the land. Untyped artefacts gave way to interfaces, generics, and the rule of strict.',
         evidence,
+        debug: {
+          detector: 'typescript-invasion',
+          positive:
+            crossedYear !== undefined
+              ? `TypeScript share crossed 50% in ${crossedYear}.`
+              : tsConfig
+                ? `TypeScript configuration appeared at ${tsConfig.path}.`
+                : `TypeScript insertions crossed the 5% discovery threshold in ${startYear}.`,
+          negative:
+            crossedYear === undefined
+              ? `No year reached the 50% TypeScript-majority threshold.`
+              : undefined,
+          metrics: [
+            { label: 'first TS-signal year', value: startYear, threshold: 'tsconfig or TS share > 5%' },
+            { label: 'majority year', value: crossedYear ?? 'not crossed', threshold: '>= 50%' },
+            { label: 'latest TS insertions', value: invasionEnd !== undefined ? (yearTs.get(invasionEnd) ?? 0) : 0 },
+            { label: 'latest JS insertions', value: invasionEnd !== undefined ? (yearJs.get(invasionEnd) ?? 0) : 0 },
+          ],
+        },
         idSuffix: String(startYear),
       }),
     ];
@@ -248,6 +278,15 @@ const greatRefactorDetector: Detector = {
         narrative:
           'A sweeping campaign of restructuring redrew the map. Old fortresses fell, new districts rose, and naming conventions were re-litigated in blood.',
         evidence,
+        debug: {
+          detector: 'great-refactor-war',
+          positive: `A 90-day window changed ${formatNumber(best.files)} files, above the ${formatNumber(200)} file threshold.`,
+          metrics: [
+            { label: 'files in 90-day window', value: best.files, threshold: '>= 200' },
+            { label: 'renamed files', value: best.renames },
+            { label: 'purged files', value: best.deletions },
+          ],
+        },
       }),
     ];
   },
@@ -295,6 +334,15 @@ const testingFamineDetector: Detector = {
         narrative:
           'The granaries of regression coverage stood empty. Business logic multiplied while assertions slept.',
         evidence,
+        debug: {
+          detector: 'testing-famine',
+          positive: `Test insertion ratio stayed below 5% for ${famineEnd - famineStart + 1} year(s).`,
+          metrics: [
+            { label: 'famine span', value: `${famineStart}–${famineEnd}`, threshold: '>= 2 years' },
+            { label: 'worst test ratio', value: `${(worstRatio * 100).toFixed(1)}%`, threshold: '< 5%' },
+            { label: 'worst year', value: worstYear },
+          ],
+        },
         idSuffix: String(famineStart),
       }),
     ];
@@ -349,6 +397,18 @@ const testingRenaissanceDetector: Detector = {
         narrative:
           'Scribes returned to the assertion halls. Spec files multiplied; CI pipelines lit up with green.',
         evidence,
+        debug: {
+          detector: 'testing-renaissance',
+          positive: bestSurge
+            ? `Touched test files jumped from ${bestSurge.from} to ${bestSurge.to}.`
+            : `${testTools.length} test-tool signal file(s) appeared.`,
+          negative: bestSurge ? undefined : 'No year-over-year test-file surge was large enough; tool appearance triggered the event.',
+          metrics: [
+            { label: 'test tool signals', value: testTools.length, threshold: '>= 1' },
+            { label: 'surge from', value: bestSurge?.from ?? 'n/a' },
+            { label: 'surge to', value: bestSurge?.to ?? 'n/a', threshold: '>= 2x previous or +30' },
+          ],
+        },
         idSuffix: String(yearOf(startDate)),
       }),
     ];
@@ -379,6 +439,14 @@ const lintingTheocracyDetector: Detector = {
         narrative:
           'A clergy of formatters and linters declared semicolons, quote styles, and trailing commas as articles of faith.',
         evidence,
+        debug: {
+          detector: 'linting-theocracy',
+          positive: `${lintTools.length} formatting/linting signal file(s) appeared.`,
+          metrics: [
+            { label: 'lint signals', value: lintTools.length, threshold: '>= 1' },
+            { label: 'severity upgrade', value: lintTools.length >= 3 ? 'major' : 'notable', threshold: 'major at >= 3 signals' },
+          ],
+        },
         idSuffix: String(yearOf(startDate)),
       }),
     ];
@@ -409,6 +477,14 @@ const containerEmpireDetector: Detector = {
         narrative:
           'The realm fortified itself in containers. Manifests, charts, and infrastructure incantations spread to every province.',
         evidence,
+        debug: {
+          detector: 'container-empire',
+          positive: `${items.length} container/infrastructure signal file(s) appeared.`,
+          metrics: [
+            { label: 'container/IaC signals', value: items.length, threshold: '>= 1' },
+            { label: 'severity upgrade', value: items.length >= 3 ? 'major' : 'notable', threshold: 'major at >= 3 signals' },
+          ],
+        },
         idSuffix: String(yearOf(startDate)),
       }),
     ];
@@ -444,6 +520,15 @@ const monorepoFederationDetector: Detector = {
         narrative:
           'City-states united under a single repo banner. Workspace manifests defined the borders; build orchestrators kept the peace.',
         evidence,
+        debug: {
+          detector: 'monorepo-federation',
+          positive: `${items.length} workspace orchestrator signal(s)${hasPackagesDir ? ' plus packages/' : ''}${hasAppsDir ? ' plus apps/' : ''} were found.`,
+          metrics: [
+            { label: 'workspace signals', value: items.length },
+            { label: 'packages/ present', value: hasPackagesDir ? 'yes' : 'no' },
+            { label: 'apps/ present', value: hasAppsDir ? 'yes' : 'no' },
+          ],
+        },
         idSuffix: String(yearOf(earliest ?? new Date().toISOString())),
       }),
     ];
@@ -491,6 +576,14 @@ const dependencyCataclysmDetector: Detector = {
         narrative:
           'A great quaking of lockfiles shook the foundations. Versions collided, graphs were rewritten, and humans clutched their CI logs.',
         evidence,
+        debug: {
+          detector: 'dependency-cataclysm',
+          positive: `Largest lockfile churn touched ${formatNumber(biggestMagnitude)} lines.`,
+          metrics: [
+            { label: 'largest lockfile churn', value: biggestMagnitude, threshold: '> 1,000 lines' },
+            { label: 'heavy dependency commits', value: lockfileChanges.length },
+          ],
+        },
       }),
     ];
   },
@@ -543,6 +636,15 @@ const founderExodusDetector: Detector = {
         narrative:
           'Some of those who first lit the campfires walked away. Their commits faded from the chronicle, leaving habits behind.',
         evidence,
+        debug: {
+          detector: 'founder-exodus',
+          positive: `${exited.length} early contributor(s) stopped before the final quartile.`,
+          metrics: [
+            { label: 'founder candidates', value: founders.length, threshold: '>= 5 early commits' },
+            { label: 'exited founders', value: exited.length, threshold: '>= 1' },
+            { label: 'last-quartile cutoff', value: shortDate(new Date(lastQuarterCutoff).toISOString()) },
+          ],
+        },
         idSuffix: exited.map(([e]) => slug(e)).join('-').slice(0, 30),
       }),
     ];
@@ -591,6 +693,14 @@ const newDynastyDetector: Detector = {
         narrative:
           'Fresh banners appeared on the ramparts. New contributors took up the maintenance plough and turned the codebase into their inheritance.',
         evidence,
+        debug: {
+          detector: 'new-dynasty',
+          positive: `${top.length} late-arriving contributor(s) crossed the dynasty threshold.`,
+          metrics: [
+            { label: 'late contributors surfaced', value: top.length, threshold: '>= 1' },
+            { label: 'newcomer threshold', value: Math.max(5, Math.floor(repo.commits.length * 0.02)), threshold: 'max(5, 2% of commits)' },
+          ],
+        },
         idSuffix: slug(top.map(([e]) => e).join('-')).slice(0, 24),
       }),
     ];
@@ -681,6 +791,15 @@ const aiPriesthoodDetector: Detector = {
         narrative:
           'A new clergy arrived bearing model weights and prompt scrolls. Vector stores rose where SQL had once ruled.',
         evidence,
+        debug: {
+          detector: 'ai-priesthood',
+          positive: `${matches.length} AI-keyword hit(s) were found in commit text or file paths.`,
+          metrics: [
+            { label: 'AI keyword hits', value: matches.length, threshold: '>= 1' },
+            { label: 'severity upgrade', value: matches.length >= 30 ? 'major' : 'notable', threshold: 'major at >= 30 hits' },
+            { label: 'first hit', value: shortDate(matches[0].date) },
+          ],
+        },
         idSuffix: String(yearOf(matches[0].date)),
       }),
     ];
@@ -732,6 +851,15 @@ const bugPlagueDetector: Detector = {
         narrative:
           'A miasma of regressions rolled across the project. Hotfix banners crowded the changelog faster than the scribes could pin them.',
         evidence,
+        debug: {
+          detector: 'bug-plague',
+          positive: `${peak.bugs}/${peak.total} commits in ${peak.month} were bug-themed.`,
+          metrics: [
+            { label: 'bug-themed commits', value: peak.bugs, threshold: '>= 8' },
+            { label: 'bug-themed ratio', value: `${(peak.ratio * 100).toFixed(0)}%`, threshold: '>= 40%' },
+            { label: 'month total commits', value: peak.total, threshold: '>= 10' },
+          ],
+        },
         idSuffix: peak.month,
       }),
     ];
@@ -767,6 +895,15 @@ const releaseEmpireDetector: Detector = {
         narrative:
           'Versioned banners flew over every milestone. Tags multiplied like bureaucratic decrees, marking a steady cadence of triumphs and rollbacks alike.',
         evidence,
+        debug: {
+          detector: 'release-empire',
+          positive: `${dated.length} dated tag(s) were found.`,
+          metrics: [
+            { label: 'dated tags', value: dated.length, threshold: '>= 5' },
+            { label: 'SemVer-ish tags', value: semverish.length },
+            { label: 'release span', value: `${shortDate(start)}–${shortDate(end)}` },
+          ],
+        },
         idSuffix: String(yearOf(start)),
       }),
     ];
@@ -815,6 +952,10 @@ export function runDetectors(
 }
 
 // ---- helpers used above -------------------------------------------------
+
+function formatNumber(value: number): string {
+  return value.toLocaleString('en-US');
+}
 
 function shortDate(iso: string): string {
   if (!iso) return '?';

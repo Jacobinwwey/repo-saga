@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { generateSaga, type ProgressEvent, type Saga } from '@repo-saga/core';
-import { renderJson, renderMarkdown, renderSvg, type Lang, type SvgTheme } from '@repo-saga/renderer';
+import { renderJson, renderMarkdown, renderSvg, translateEra, type Lang, type SvgTheme } from '@repo-saga/renderer';
 import { startServer } from '@repo-saga/server';
 import kleur from 'kleur';
 import open from 'open';
@@ -201,7 +201,8 @@ async function main() {
     `${kleur.gray('Eras:')} ${saga.eras.length}  ${kleur.gray('Events:')} ${saga.events.length}  ${kleur.gray('Commits:')} ${saga.repo.commitCount.toLocaleString()}`,
   );
   for (const era of saga.eras) {
-    info(`  ${kleur.cyan(`${era.startYear}–${era.endYear}`)}  ${kleur.bold(era.name)}`);
+    const name = translateEra(era, saga.events, args.lang).name;
+    info(`  ${kleur.cyan(`${era.startYear}–${era.endYear}`)}  ${kleur.bold(name)}`);
   }
 
   if (!args.server) return;
