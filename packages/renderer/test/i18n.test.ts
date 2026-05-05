@@ -122,7 +122,9 @@ describe('renderer i18n coverage', () => {
   });
 
   it('keeps Traditional Chinese distinct from Simplified Chinese', () => {
-    expect(label('zh_Hant' as never, 'definingEvents')).not.toBe(label('zh' as never, 'definingEvents'));
+    expect(label('zh_Hant' as never, 'definingEvents')).not.toBe(
+      label('zh' as never, 'definingEvents'),
+    );
     expect(translateEventTitle('initial-chaos', 'zh_Hant' as never)).not.toBe(
       translateEventTitle('initial-chaos', 'zh' as never),
     );
@@ -143,6 +145,52 @@ describe('renderer i18n coverage', () => {
         events: 'Caos inicial',
       }),
     ).not.toMatch(/__[A-Z0-9_]+__/);
+  });
+
+  it('uses localized full-sentence era summaries for every downstream README locale', () => {
+    const englishSummary = label('en', 'eraSummary', {
+      period: '2025 Q2',
+      commits: 10,
+      contributors: 2,
+      insertions: 300,
+      deletions: 40,
+      events: 'Initial Chaos',
+    });
+    const englishQuiet = label('en', 'eraSummaryQuiet', {
+      period: '2025 Q2',
+      commits: 10,
+      contributors: 2,
+      insertions: 300,
+      deletions: 40,
+      events: 'Initial Chaos',
+    });
+
+    for (const locale of DOWNSTREAM_README_LOCALES) {
+      if (locale === 'en') continue;
+      const summary = label(locale as never, 'eraSummary', {
+        period: '2025 Q2',
+        commits: 10,
+        contributors: 2,
+        insertions: 300,
+        deletions: 40,
+        events: 'Initial Chaos',
+      });
+      const quiet = label(locale as never, 'eraSummaryQuiet', {
+        period: '2025 Q2',
+        commits: 10,
+        contributors: 2,
+        insertions: 300,
+        deletions: 40,
+        events: 'Initial Chaos',
+      });
+
+      expect(summary).not.toBe(englishSummary);
+      expect(quiet).not.toBe(englishQuiet);
+      expect(summary).not.toContain('Defining moments');
+      expect(quiet).not.toContain('No defining heuristic events landed');
+      expect(summary).not.toMatch(/__[A-Z0-9_]+__/);
+      expect(quiet).not.toMatch(/__[A-Z0-9_]+__/);
+    }
   });
 
   it('overrides known English fallback leaks in downstream locales', () => {
@@ -223,6 +271,7 @@ describe('renderer i18n coverage', () => {
     const hungarianSvg = renderSvg(fixture, { lang: 'hu' as never });
     const japaneseSvg = renderSvg(fixture, { lang: 'ja' as never });
     const koreanSvg = renderSvg(fixture, { lang: 'ko' as never });
+    const portugueseSvg = renderSvg(fixture, { lang: 'pt' as never });
     const traditionalChineseSvg = renderSvg(fixture, { lang: 'zh_Hant' as never });
 
     expect(finnishSvg).not.toContain('TypeScriptin vyöry:n');
@@ -231,17 +280,49 @@ describe('renderer i18n coverage', () => {
     expect(japaneseSvg).not.toContain('チャプター');
     expect(japaneseSvg).not.toContain('TypeScript侵攻 で定義された');
     expect(koreanSvg).not.toContain('tsconfig.json 이');
+    expect(portugueseSvg).not.toContain('contribuidores');
+    expect(portugueseSvg).not.toContain('Império das releases');
+    expect(traditionalChineseSvg).not.toContain('決定性時刻');
 
     expect(label('zh_Hant' as never, 'civilizationOf', { name: 'demo' })).toBe('demo 的文明史');
-    expect(translateEvidence('38 tags found between 2025-04-17 and 2026-05-03', 'el' as never)).toContain(
-      'ετικέτες',
+    expect(
+      translateEvidence('38 tags found between 2025-04-17 and 2026-05-03', 'el' as never),
+    ).toContain('ετικέτες');
+    expect(
+      translateEvidence(
+        'tsconfig.json first appeared on 2025-04-17 (tsconfig.json)',
+        'ja' as never,
+      ),
+    ).toBe('tsconfig.jsonは 2025-04-17 に初めて現れた (tsconfig.json)');
+    expect(
+      translateEvidence(
+        'tsconfig.json first appeared on 2025-04-17 (tsconfig.json)',
+        'ko' as never,
+      ),
+    ).toBe('tsconfig.json이 2025-04-17에 처음 나타났다 (tsconfig.json)');
+    expect(label('ko' as never, 'eraThemeTemplate', { title: 'TypeScript 침공' })).toBe(
+      'TypeScript 침공의 색채가 짙은 장',
     );
-    expect(translateEvidence('tsconfig.json first appeared on 2025-04-17 (tsconfig.json)', 'ja' as never)).toBe(
-      'tsconfig.jsonは 2025-04-17 に初めて現れた (tsconfig.json)',
-    );
-    expect(translateEvidence('tsconfig.json first appeared on 2025-04-17 (tsconfig.json)', 'ko' as never)).toBe(
-      'tsconfig.json이 2025-04-17에 처음 나타났다 (tsconfig.json)',
-    );
+    expect(
+      label('pt' as never, 'eraSummary', {
+        period: '2025 Q2',
+        commits: 10,
+        contributors: 2,
+        insertions: 300,
+        deletions: 40,
+        events: 'Caos inicial',
+      }),
+    ).toContain('colaboradores');
+    expect(
+      label('zh_Hant' as never, 'eraSummary', {
+        period: '2025 Q2',
+        commits: 10,
+        contributors: 2,
+        insertions: 300,
+        deletions: 40,
+        events: '初始混亂',
+      }),
+    ).toContain('定義性事件');
     expect(label('zh_Hant' as never, 'eraThemeTemplate', { title: 'TypeScript 入侵' })).toBe(
       '由 TypeScript 入侵 定義的篇章',
     );

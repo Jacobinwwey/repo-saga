@@ -5,6 +5,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'سجل repo-saga',
       definingEvents: 'الأحداث الفاصلة',
       quietStretch: '— فترة هادئة في مجرى السجل —',
+      eraSummary:
+        '{period}: {commits} التزامًا، {contributors} مساهمين، +{insertions} / -{deletions} سطرًا. الأحداث الفاصلة: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} التزامًا، {contributors} مساهمين، +{insertions} / -{deletions} سطرًا. في هذا المقطع سار السجل بهدوء أكبر.',
       topLanguages: 'أبرز اللغات: {value}',
       stewards: 'حرّاس السجل: {value}',
       posterFooter: 'REPO-SAGA · v{version} · أُنشئ في {date}',
@@ -34,7 +38,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: 'ظهر __KIND__ في __PATH__ بتاريخ __DATE__',
       bugMonthPeak: 'كان __BUGS__ من أصل __TOTAL__ التزامًا في __MONTH__ ذا طابع bug (__PCT__%)',
       aiHitInPath: '__DATE__: ظهرت "__HIT__" في المسار __PATH__',
-      testFilesJumped: 'قفز عدد ملفات الاختبار التي لُمست سنويًا من __FROM__ (__FROM_YEAR__) إلى __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'قفز عدد ملفات الاختبار التي لُمست سنويًا من __FROM__ (__FROM_YEAR__) إلى __TO__ (__TO_YEAR__)',
       distinctFilesWindow: 'تغيّر __FILES__ ملفًا مختلفًا خلال نافذة من 90 يومًا',
     },
   },
@@ -44,6 +49,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'একটি repo-saga ক্রনিকল',
       definingEvents: 'নির্ধারক ঘটনা',
       quietStretch: '— ক্রনিকলের এক শান্ত পর্ব —',
+      eraSummary:
+        '{period}: {commits}টি কমিট, {contributors} জন অবদানকারী, +{insertions} / -{deletions} লাইন। নির্ধারক ঘটনা: {events}।',
+      eraSummaryQuiet:
+        '{period}: {commits}টি কমিট, {contributors} জন অবদানকারী, +{insertions} / -{deletions} লাইন। এই পর্বে ক্রনিকল তুলনামূলক শান্ত ছিল।',
       topLanguages: 'শীর্ষ ভাষা: {value}',
       stewards: 'ক্রনিকলের অভিভাবক: {value}',
       posterFooter: 'REPO-SAGA · v{version} · তৈরি হয়েছে {date}',
@@ -73,7 +82,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__DATE__ তারিখে __KIND__ দেখা যায় __PATH__-এ',
       bugMonthPeak: '__MONTH__-এ __TOTAL__টির মধ্যে __BUGS__টি কমিট bug-থিমযুক্ত ছিল (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" দেখা গেছে __PATH__ পথে',
-      testFilesJumped: 'প্রতি বছর স্পর্শ করা টেস্ট ফাইলের সংখ্যা __FROM__ (__FROM_YEAR__) থেকে __TO__ (__TO_YEAR__) এ বেড়েছে',
+      testFilesJumped:
+        'প্রতি বছর স্পর্শ করা টেস্ট ফাইলের সংখ্যা __FROM__ (__FROM_YEAR__) থেকে __TO__ (__TO_YEAR__) এ বেড়েছে',
       distinctFilesWindow: '৯০ দিনের মধ্যে __FILES__টি ভিন্ন ফাইল পরিবর্তিত হয়েছে',
     },
   },
@@ -83,6 +93,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'KRONIKA REPO-SAGA',
       definingEvents: 'Určující události',
       quietStretch: '— klidnější úsek kroniky —',
+      eraSummary:
+        '{period}: {commits} commitů, {contributors} přispěvatelé, +{insertions} / -{deletions} řádků. Určující události: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commitů, {contributors} přispěvatelé, +{insertions} / -{deletions} řádků. V tomto úseku byla kronika klidnější.',
       topLanguages: 'Hlavní jazyky: {value}',
       stewards: 'Správci kroniky: {value}',
       posterFooter: 'REPO-SAGA · v{version} · vygenerováno {date}',
@@ -92,6 +106,9 @@ export const MANUAL_LOCALE_DATA = {
       metricTopLanguages: 'hlavní jazyky',
       eraThemeTemplate: 'kapitola utvářená událostí {title}',
       fallbackTheme: 'klidnější kapitola mezi výraznějšími zvraty',
+    },
+    eraPrefixes: {
+      'testing-renaissance': 'Renesance',
     },
     eventTitles: {
       'typescript-invasion': 'Nástup TypeScriptu',
@@ -112,7 +129,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ se objevil v __PATH__ dne __DATE__',
       bugMonthPeak: '__BUGS__ z __TOTAL__ commitů v období __MONTH__ mělo bugové téma (__PCT__%)',
       aiHitInPath: '__DATE__: „__HIT__“ se objevil v cestě __PATH__',
-      testFilesJumped: 'Počet testovacích souborů dotčených za rok vzrostl z __FROM__ (__FROM_YEAR__) na __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Počet testovacích souborů dotčených za rok vzrostl z __FROM__ (__FROM_YEAR__) na __TO__ (__TO_YEAR__)',
       distinctFilesWindow: 'V 90denním okně se změnilo __FILES__ různých souborů',
     },
   },
@@ -122,6 +140,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'EN REPO-SAGA-KRØNIKE',
       definingEvents: 'Skelsættende begivenheder',
       quietStretch: '— et roligt stræk i krøniken —',
+      eraSummary:
+        '{period}: {commits} commits, {contributors} bidragydere, +{insertions} / -{deletions} linjer. Skelsættende begivenheder: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commits, {contributors} bidragydere, +{insertions} / -{deletions} linjer. I dette afsnit forløb krøniken mere roligt.',
       topLanguages: 'Top-sprog: {value}',
       stewards: 'Krønikens vogtere: {value}',
       posterFooter: 'REPO-SAGA · v{version} · genereret {date}',
@@ -151,7 +173,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ dukkede op i __PATH__ den __DATE__',
       bugMonthPeak: '__BUGS__ af __TOTAL__ commits i __MONTH__ var bug-prægede (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" dukkede op i stien __PATH__',
-      testFilesJumped: 'Antallet af testfiler berørt pr. år sprang fra __FROM__ (__FROM_YEAR__) til __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Antallet af testfiler berørt pr. år sprang fra __FROM__ (__FROM_YEAR__) til __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ forskellige filer blev ændret i et 90-dages vindue',
     },
   },
@@ -161,6 +184,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'EINE REPO-SAGA-CHRONIK',
       definingEvents: 'Prägende Ereignisse',
       quietStretch: '— eine ruhige Phase in der Chronik —',
+      eraSummary:
+        '{period}: {commits} Commits, {contributors} Mitwirkende, +{insertions} / -{deletions} Zeilen. Prägende Ereignisse: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} Commits, {contributors} Mitwirkende, +{insertions} / -{deletions} Zeilen. In diesem Abschnitt verlief die Chronik ruhiger.',
       topLanguages: 'Wichtigste Sprachen: {value}',
       stewards: 'Hüter der Chronik: {value}',
       posterFooter: 'REPO-SAGA · v{version} · erzeugt am {date}',
@@ -190,8 +217,10 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ erschien am __DATE__ in __PATH__',
       bugMonthPeak: '__BUGS__ von __TOTAL__ Commits in __MONTH__ hatten ein Bug-Thema (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" erschien im Pfad __PATH__',
-      testFilesJumped: 'Die pro Jahr berührten Testdateien sprangen von __FROM__ (__FROM_YEAR__) auf __TO__ (__TO_YEAR__)',
-      distinctFilesWindow: '__FILES__ verschiedene Dateien wurden in einem 90-Tage-Fenster geändert',
+      testFilesJumped:
+        'Die pro Jahr berührten Testdateien sprangen von __FROM__ (__FROM_YEAR__) auf __TO__ (__TO_YEAR__)',
+      distinctFilesWindow:
+        '__FILES__ verschiedene Dateien wurden in einem 90-Tage-Fenster geändert',
     },
   },
   el: {
@@ -200,6 +229,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'ΕΝΑ ΧΡΟΝΙΚΟ REPO-SAGA',
       definingEvents: 'Καθοριστικά γεγονότα',
       quietStretch: '— ένα ήσυχο πέρασμα στο χρονικό —',
+      eraSummary:
+        '{period}: {commits} commits, {contributors} συντελεστές, +{insertions} / -{deletions} γραμμές. Καθοριστικά γεγονότα: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commits, {contributors} συντελεστές, +{insertions} / -{deletions} γραμμές. Σε αυτό το πέρασμα, το χρονικό κύλησε πιο ήσυχα.',
       topLanguages: 'Κορυφαίες γλώσσες: {value}',
       stewards: 'Θεματοφύλακες του χρονικού: {value}',
       posterFooter: 'REPO-SAGA · v{version} · δημιουργήθηκε {date}',
@@ -229,16 +262,22 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: 'Το __KIND__ εμφανίστηκε στο __PATH__ στις __DATE__',
       bugMonthPeak: '__BUGS__ από τα __TOTAL__ commits στο __MONTH__ είχαν θέμα bug (__PCT__%)',
       aiHitInPath: '__DATE__: το "__HIT__" εμφανίστηκε στη διαδρομή __PATH__',
-      testFilesJumped: 'Τα αρχεία δοκιμών που αγγίχθηκαν ανά έτος εκτοξεύτηκαν από __FROM__ (__FROM_YEAR__) σε __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Τα αρχεία δοκιμών που αγγίχθηκαν ανά έτος εκτοξεύτηκαν από __FROM__ (__FROM_YEAR__) σε __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ διαφορετικά αρχεία άλλαξαν μέσα σε παράθυρο 90 ημερών',
     },
   },
   es: {
     labels: {
-      poster_subtitle: '{period} · {commits} commits · {contributors} personas colaboradoras · {tags} tags',
+      poster_subtitle:
+        '{period} · {commits} commits · {contributors} personas colaboradoras · {tags} tags',
       posterTagline: 'UNA CRÓNICA REPO-SAGA',
       definingEvents: 'Eventos decisivos',
       quietStretch: '— un tramo tranquilo de la crónica —',
+      eraSummary:
+        '{period}: {commits} commits, {contributors} colaboradores, +{insertions} / -{deletions} líneas. Eventos decisivos: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commits, {contributors} colaboradores, +{insertions} / -{deletions} líneas. En este tramo la crónica transcurrió con más calma.',
       topLanguages: 'Lenguajes principales: {value}',
       stewards: 'Guardianes de la crónica: {value}',
       posterFooter: 'REPO-SAGA · v{version} · generado el {date}',
@@ -266,9 +305,11 @@ export const MANUAL_LOCALE_DATA = {
       tsconfigAppeared: 'tsconfig.json apareció por primera vez el __DATE__ (__PATH__)',
       tagsFoundBetween: '__COUNT__ tags encontrados entre __START__ y __END__',
       genericSignalArrived: '__KIND__ apareció en __PATH__ el __DATE__',
-      bugMonthPeak: '__BUGS__ de __TOTAL__ commits en __MONTH__ tuvieron temática de bug (__PCT__%)',
+      bugMonthPeak:
+        '__BUGS__ de __TOTAL__ commits en __MONTH__ tuvieron temática de bug (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" apareció en la ruta __PATH__',
-      testFilesJumped: 'Los archivos de prueba tocados por año saltaron de __FROM__ (__FROM_YEAR__) a __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Los archivos de prueba tocados por año saltaron de __FROM__ (__FROM_YEAR__) a __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ archivos distintos cambiaron en una ventana de 90 días',
     },
   },
@@ -278,6 +319,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'REPO-SAGA-KRONIKKA',
       definingEvents: 'Määrittävät tapahtumat',
       quietStretch: '— kronikan rauhallisempi jakso —',
+      eraSummary:
+        '{period}: {commits} commitia, {contributors} tekijää, +{insertions} / -{deletions} riviä. Määrittävät tapahtumat: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commitia, {contributors} tekijää, +{insertions} / -{deletions} riviä. Tällä jaksolla kronikka kulki rauhallisemmin.',
       topLanguages: 'Pääkielet: {value}',
       stewards: 'Kronikan vaalijat: {value}',
       posterFooter: 'REPO-SAGA · v{version} · luotu {date}',
@@ -289,7 +334,7 @@ export const MANUAL_LOCALE_DATA = {
       fallbackTheme: 'rauhallisempi luku suurempien mullistusten välissä',
     },
     eventTitles: {
-      'typescript-invasion': 'TypeScriptin vyöry',
+      'typescript-invasion': 'TypeScriptin invaasio',
       'testing-renaissance': 'Testauksen renessanssi',
       'linting-theocracy': 'Linting-teokratia',
       'ai-priesthood': 'Tekoälypapisto',
@@ -307,7 +352,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ ilmestyi polkuun __PATH__ päivänä __DATE__',
       bugMonthPeak: '__BUGS__ / __TOTAL__ commitia kuussa __MONTH__ oli bugiaiheisia (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" ilmestyi polkuun __PATH__',
-      testFilesJumped: 'Vuodessa kosketettujen testitiedostojen määrä nousi __FROM__:stä (__FROM_YEAR__) arvoon __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Vuodessa kosketettujen testitiedostojen määrä nousi __FROM__:stä (__FROM_YEAR__) arvoon __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ eri tiedostoa muuttui 90 päivän ikkunassa',
     },
   },
@@ -317,6 +363,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'UNE CHRONIQUE REPO-SAGA',
       definingEvents: 'Événements déterminants',
       quietStretch: '— une phase plus calme de la chronique —',
+      eraSummary:
+        '{period} : {commits} commits, {contributors} contributeurs, +{insertions} / -{deletions} lignes. Événements déterminants : {events}.',
+      eraSummaryQuiet:
+        '{period} : {commits} commits, {contributors} contributeurs, +{insertions} / -{deletions} lignes. Sur ce passage, la chronique a suivi un cours plus paisible.',
       topLanguages: 'Langages principaux : {value}',
       stewards: 'Gardiens de la chronique : {value}',
       posterFooter: 'REPO-SAGA · v{version} · généré le {date}',
@@ -346,7 +396,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ est apparu dans __PATH__ le __DATE__',
       bugMonthPeak: '__BUGS__ commits sur __TOTAL__ en __MONTH__ étaient orientés bug (__PCT__%)',
       aiHitInPath: '__DATE__ : "__HIT__" est apparu dans le chemin __PATH__',
-      testFilesJumped: 'Le nombre de fichiers de test touchés par an est passé de __FROM__ (__FROM_YEAR__) à __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Le nombre de fichiers de test touchés par an est passé de __FROM__ (__FROM_YEAR__) à __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ fichiers distincts ont changé sur une fenêtre de 90 jours',
     },
   },
@@ -356,6 +407,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'כרוניקת repo-saga',
       definingEvents: 'אירועים מכוננים',
       quietStretch: '— פרק שקט יותר בכרוניקה —',
+      eraSummary:
+        '{period}: {commits} קומיטים, {contributors} תורמים, +{insertions} / -{deletions} שורות. אירועים מכוננים: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} קומיטים, {contributors} תורמים, +{insertions} / -{deletions} שורות. במקטע הזה הכרוניקה זרמה בשקט יחסי.',
       topLanguages: 'שפות מובילות: {value}',
       stewards: 'שומרי הכרוניקה: {value}',
       posterFooter: 'REPO-SAGA · v{version} · נוצר בתאריך {date}',
@@ -385,7 +440,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ הופיע ב-__PATH__ בתאריך __DATE__',
       bugMonthPeak: '__BUGS__ מתוך __TOTAL__ קומיטים ב-__MONTH__ היו בנושא bug (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" הופיע בנתיב __PATH__',
-      testFilesJumped: 'מספר קובצי הבדיקה שנגעו בהם בשנה זינק מ-__FROM__ (__FROM_YEAR__) ל-__TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'מספר קובצי הבדיקה שנגעו בהם בשנה זינק מ-__FROM__ (__FROM_YEAR__) ל-__TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ קבצים שונים השתנו בחלון של 90 יום',
     },
   },
@@ -395,6 +451,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'एक repo-saga कालक्रम',
       definingEvents: 'निर्धारक घटनाएँ',
       quietStretch: '— कालक्रम का एक शांत चरण —',
+      eraSummary:
+        '{period}: {commits} कमिट, {contributors} योगदानकर्ता, +{insertions} / -{deletions} पंक्तियाँ। निर्धारक घटनाएँ: {events}।',
+      eraSummaryQuiet:
+        '{period}: {commits} कमिट, {contributors} योगदानकर्ता, +{insertions} / -{deletions} पंक्तियाँ। इस खंड में कालक्रम अपेक्षाकृत शांत रहा।',
       topLanguages: 'शीर्ष भाषाएँ: {value}',
       stewards: 'कालक्रम के संरक्षक: {value}',
       posterFooter: 'REPO-SAGA · v{version} · {date} को जनरेट किया गया',
@@ -424,7 +484,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ __DATE__ को __PATH__ में दिखाई दिया',
       bugMonthPeak: '__MONTH__ में __TOTAL__ में से __BUGS__ कमिट bug-थीम वाले थे (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" __PATH__ पथ में दिखाई दिया',
-      testFilesJumped: 'हर साल छुई गई टेस्ट फ़ाइलें __FROM__ (__FROM_YEAR__) से बढ़कर __TO__ (__TO_YEAR__) हो गईं',
+      testFilesJumped:
+        'हर साल छुई गई टेस्ट फ़ाइलें __FROM__ (__FROM_YEAR__) से बढ़कर __TO__ (__TO_YEAR__) हो गईं',
       distinctFilesWindow: '90 दिनों की विंडो में __FILES__ अलग-अलग फ़ाइलें बदलीं',
     },
   },
@@ -434,6 +495,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'Egy repo-saga krónika',
       definingEvents: 'Meghatározó események',
       quietStretch: '— egy csendesebb szakasz a krónikában —',
+      eraSummary:
+        '{period}: {commits} commit, {contributors} közreműködő, +{insertions} / -{deletions} sor. Meghatározó események: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commit, {contributors} közreműködő, +{insertions} / -{deletions} sor. Ebben a szakaszban a krónika csendesebben hömpölygött.',
       topLanguages: 'Legfontosabb nyelvek: {value}',
       stewards: 'A krónika őrzői: {value}',
       posterFooter: 'REPO-SAGA · v{version} · generálva {date}',
@@ -463,7 +528,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: 'A(z) __KIND__ megjelent itt: __PATH__ ekkor: __DATE__',
       bugMonthPeak: '__MONTH__ során __BUGS__ a(z) __TOTAL__ commitból bug témájú volt (__PCT__%)',
       aiHitInPath: '__DATE__: a(z) "__HIT__" megjelent ebben az útvonalban: __PATH__',
-      testFilesJumped: 'Az évente érintett tesztfájlok száma __FROM__-ról (__FROM_YEAR__) __TO__-ra (__TO_YEAR__) ugrott',
+      testFilesJumped:
+        'Az évente érintett tesztfájlok száma __FROM__-ról (__FROM_YEAR__) __TO__-ra (__TO_YEAR__) ugrott',
       distinctFilesWindow: '__FILES__ különböző fájl változott egy 90 napos ablakban',
     },
   },
@@ -473,6 +539,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'SEBUAH KRONIK REPO-SAGA',
       definingEvents: 'Peristiwa penentu',
       quietStretch: '— satu jeda tenang dalam kronik —',
+      eraSummary:
+        '{period}: {commits} commit, {contributors} kontributor, +{insertions} / -{deletions} baris. Peristiwa penentu: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commit, {contributors} kontributor, +{insertions} / -{deletions} baris. Pada rentang ini, kronik berjalan lebih tenang.',
       topLanguages: 'Bahasa utama: {value}',
       stewards: 'Penjaga kronik: {value}',
       posterFooter: 'REPO-SAGA · v{version} · dibuat {date}',
@@ -502,7 +572,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ muncul di __PATH__ pada __DATE__',
       bugMonthPeak: '__BUGS__ dari __TOTAL__ commit pada __MONTH__ bertema bug (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" muncul di path __PATH__',
-      testFilesJumped: 'File uji yang tersentuh per tahun melonjak dari __FROM__ (__FROM_YEAR__) ke __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'File uji yang tersentuh per tahun melonjak dari __FROM__ (__FROM_YEAR__) ke __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ file berbeda berubah dalam jendela 90 hari',
     },
   },
@@ -512,6 +583,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'UNA CRONACA REPO-SAGA',
       definingEvents: 'Eventi decisivi',
       quietStretch: '— un tratto più quieto della cronaca —',
+      eraSummary:
+        '{period}: {commits} commit, {contributors} contributori, +{insertions} / -{deletions} righe. Eventi decisivi: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commit, {contributors} contributori, +{insertions} / -{deletions} righe. In questo tratto la cronaca è scorsa con più calma.',
       topLanguages: 'Linguaggi principali: {value}',
       stewards: 'Custodi della cronaca: {value}',
       posterFooter: 'REPO-SAGA · v{version} · generato il {date}',
@@ -541,7 +616,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ è comparso in __PATH__ il __DATE__',
       bugMonthPeak: '__BUGS__ commit su __TOTAL__ in __MONTH__ avevano un tema bug (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" è comparso nel percorso __PATH__',
-      testFilesJumped: 'I file di test toccati per anno sono saliti da __FROM__ (__FROM_YEAR__) a __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'I file di test toccati per anno sono saliti da __FROM__ (__FROM_YEAR__) a __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ file distinti sono cambiati in una finestra di 90 giorni',
     },
   },
@@ -551,6 +627,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'repo-saga の編年記',
       definingEvents: '時代を決めた出来事',
       quietStretch: '— 編年記の静かなひと幕 —',
+      eraSummary:
+        '{period}：{commits}コミット、{contributors}人の貢献者、+{insertions} / -{deletions}行。時代を決めた出来事：{events}。',
+      eraSummaryQuiet:
+        '{period}：{commits}コミット、{contributors}人の貢献者、+{insertions} / -{deletions}行。この区間では編年記がより静かに流れた。',
       topLanguages: '主要言語: {value}',
       stewards: '編年の守り手: {value}',
       posterFooter: 'REPO-SAGA · v{version} · {date} 生成',
@@ -580,7 +660,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ が __DATE__ に __PATH__ に現れた',
       bugMonthPeak: '__MONTH__ の __TOTAL__ コミット中 __BUGS__ 件が bug 系だった (__PCT__%)',
       aiHitInPath: '__DATE__: 「__HIT__」がパス __PATH__ に現れた',
-      testFilesJumped: '年ごとに触れられたテストファイル数が __FROM__ (__FROM_YEAR__) から __TO__ (__TO_YEAR__) に跳ね上がった',
+      testFilesJumped:
+        '年ごとに触れられたテストファイル数が __FROM__ (__FROM_YEAR__) から __TO__ (__TO_YEAR__) に跳ね上がった',
       distinctFilesWindow: '90日間の窓で __FILES__ 個の異なるファイルが変更された',
     },
   },
@@ -590,6 +671,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'repo-saga 연대기',
       definingEvents: '결정적 사건들',
       quietStretch: '— 연대기의 잠잠한 구간 —',
+      eraSummary:
+        '{period}: {commits}개 커밋, {contributors}명의 기여자, +{insertions} / -{deletions}줄. 결정적 사건들: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits}개 커밋, {contributors}명의 기여자, +{insertions} / -{deletions}줄. 이 구간에서는 연대기가 한층 더 고요하게 흘렀다.',
       topLanguages: '주요 언어: {value}',
       stewards: '연대기의 수호자: {value}',
       posterFooter: 'REPO-SAGA · v{version} · {date} 생성',
@@ -597,7 +682,7 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: '기여자',
       metricTags: '태그',
       metricTopLanguages: '주요 언어',
-      eraThemeTemplate: '{title}가 이끈 장',
+      eraThemeTemplate: '{title}의 색채가 짙은 장',
       fallbackTheme: '더 큰 격변 사이에 놓인 고요한 장',
     },
     eventTitles: {
@@ -616,10 +701,11 @@ export const MANUAL_LOCALE_DATA = {
       commitsInFirstDays: '처음 __DAYS__일 동안 __COMMITS__개의 커밋',
       tsconfigAppeared: 'tsconfig.json이 __DATE__에 처음 나타났다 (__PATH__)',
       tagsFoundBetween: '__START__부터 __END__ 사이에 __COUNT__개의 태그가 발견되었다',
-      genericSignalArrived: '__KIND__가 __DATE__에 __PATH__에 나타났다',
+      genericSignalArrived: '__DATE__에 __PATH__에서 __KIND__가 나타났다',
       bugMonthPeak: '__MONTH__의 __TOTAL__개 커밋 중 __BUGS__개가 bug 테마였다 (__PCT__%)',
-      aiHitInPath: '__DATE__: "__HIT__"이 경로 __PATH__에 나타났다',
-      testFilesJumped: '연도별로 손댄 테스트 파일 수가 __FROM__ (__FROM_YEAR__)에서 __TO__ (__TO_YEAR__)로 뛰었다',
+      aiHitInPath: '__DATE__: "__HIT__"라는 표현이 경로 __PATH__에 나타났다',
+      testFilesJumped:
+        '연도별로 손댄 테스트 파일 수가 __FROM__ (__FROM_YEAR__)에서 __TO__ (__TO_YEAR__)로 뛰었다',
       distinctFilesWindow: '90일 창에서 __FILES__개의 서로 다른 파일이 변경되었다',
     },
   },
@@ -629,6 +715,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'SEBUAH KRONIK REPO-SAGA',
       definingEvents: 'Peristiwa penentu',
       quietStretch: '— satu bahagian kronik yang lebih tenang —',
+      eraSummary:
+        '{period}: {commits} commit, {contributors} penyumbang, +{insertions} / -{deletions} baris. Peristiwa penentu: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commit, {contributors} penyumbang, +{insertions} / -{deletions} baris. Pada bahagian ini, kronik bergerak dengan lebih tenang.',
       topLanguages: 'Bahasa utama: {value}',
       stewards: 'Penjaga kronik: {value}',
       posterFooter: 'REPO-SAGA · v{version} · dijana {date}',
@@ -658,7 +748,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ muncul di __PATH__ pada __DATE__',
       bugMonthPeak: '__BUGS__ daripada __TOTAL__ commit pada __MONTH__ bertema bug (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" muncul dalam laluan __PATH__',
-      testFilesJumped: 'Fail ujian yang disentuh setiap tahun melonjak daripada __FROM__ (__FROM_YEAR__) kepada __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Fail ujian yang disentuh setiap tahun melonjak daripada __FROM__ (__FROM_YEAR__) kepada __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ fail berbeza berubah dalam tetingkap 90 hari',
     },
   },
@@ -668,6 +759,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'EEN REPO-SAGA-KRONIEK',
       definingEvents: 'Bepalende gebeurtenissen',
       quietStretch: '— een rustige passage in de kroniek —',
+      eraSummary:
+        '{period}: {commits} commits, {contributors} bijdragers, +{insertions} / -{deletions} regels. Bepalende gebeurtenissen: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commits, {contributors} bijdragers, +{insertions} / -{deletions} regels. In deze passage verliep de kroniek rustiger.',
       topLanguages: 'Belangrijkste talen: {value}',
       stewards: 'Hoeders van de kroniek: {value}',
       posterFooter: 'REPO-SAGA · v{version} · gegenereerd op {date}',
@@ -695,10 +790,13 @@ export const MANUAL_LOCALE_DATA = {
       tsconfigAppeared: 'tsconfig.json verscheen voor het eerst op __DATE__ (__PATH__)',
       tagsFoundBetween: '__COUNT__ tags gevonden tussen __START__ en __END__',
       genericSignalArrived: '__KIND__ verscheen in __PATH__ op __DATE__',
-      bugMonthPeak: '__BUGS__ van de __TOTAL__ commits in __MONTH__ hadden een bug-thema (__PCT__%)',
+      bugMonthPeak:
+        '__BUGS__ van de __TOTAL__ commits in __MONTH__ hadden een bug-thema (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" verscheen in pad __PATH__',
-      testFilesJumped: 'Het aantal testbestanden dat per jaar werd geraakt sprong van __FROM__ (__FROM_YEAR__) naar __TO__ (__TO_YEAR__)',
-      distinctFilesWindow: '__FILES__ verschillende bestanden veranderden binnen een venster van 90 dagen',
+      testFilesJumped:
+        'Het aantal testbestanden dat per jaar werd geraakt sprong van __FROM__ (__FROM_YEAR__) naar __TO__ (__TO_YEAR__)',
+      distinctFilesWindow:
+        '__FILES__ verschillende bestanden veranderden binnen een venster van 90 dagen',
     },
   },
   no: {
@@ -707,6 +805,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'EN REPO-SAGA-KRØNIKE',
       definingEvents: 'Definerende hendelser',
       quietStretch: '— et stille strekk i krøniken —',
+      eraSummary:
+        '{period}: {commits} commits, {contributors} bidragsytere, +{insertions} / -{deletions} linjer. Definerende hendelser: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commits, {contributors} bidragsytere, +{insertions} / -{deletions} linjer. I dette strekket gikk krøniken roligere frem.',
       topLanguages: 'Topp-språk: {value}',
       stewards: 'Krønikens voktere: {value}',
       posterFooter: 'REPO-SAGA · v{version} · generert {date}',
@@ -736,7 +838,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ dukket opp i __PATH__ den __DATE__',
       bugMonthPeak: '__BUGS__ av __TOTAL__ commits i __MONTH__ var bug-preget (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" dukket opp i stien __PATH__',
-      testFilesJumped: 'Testfiler berørt per år hoppet fra __FROM__ (__FROM_YEAR__) til __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Testfiler berørt per år hoppet fra __FROM__ (__FROM_YEAR__) til __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ ulike filer ble endret i et 90-dagers vindu',
     },
   },
@@ -746,6 +849,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'KRONIKA REPO-SAGA',
       definingEvents: 'Wydarzenia definiujące',
       quietStretch: '— spokojniejszy odcinek kroniki —',
+      eraSummary:
+        '{period}: {commits} commitów, {contributors} współtwórcy, +{insertions} / -{deletions} wierszy. Wydarzenia definiujące: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commitów, {contributors} współtwórcy, +{insertions} / -{deletions} wierszy. W tym odcinku kronika płynęła spokojniej.',
       topLanguages: 'Najważniejsze języki: {value}',
       stewards: 'Strażnicy kroniki: {value}',
       posterFooter: 'REPO-SAGA · v{version} · wygenerowano {date}',
@@ -775,21 +882,26 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ pojawił się w __PATH__ dnia __DATE__',
       bugMonthPeak: '__BUGS__ z __TOTAL__ commitów w __MONTH__ miało motyw bugów (__PCT__%)',
       aiHitInPath: '__DATE__: „__HIT__” pojawiło się w ścieżce __PATH__',
-      testFilesJumped: 'Liczba plików testowych dotykanych rocznie skoczyła z __FROM__ (__FROM_YEAR__) do __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Liczba plików testowych dotykanych rocznie skoczyła z __FROM__ (__FROM_YEAR__) do __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ różnych plików zmieniło się w 90-dniowym oknie',
     },
   },
   pt: {
     labels: {
-      poster_subtitle: '{period} · {commits} commits · {contributors} contribuidores · {tags} tags',
+      poster_subtitle: '{period} · {commits} commits · {contributors} colaboradores · {tags} tags',
       posterTagline: 'UMA CRÔNICA REPO-SAGA',
       definingEvents: 'Eventos decisivos',
       quietStretch: '— um trecho mais calmo da crônica —',
+      eraSummary:
+        '{period}: {commits} commits, {contributors} colaboradores, +{insertions} / -{deletions} linhas. Eventos decisivos: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commits, {contributors} colaboradores, +{insertions} / -{deletions} linhas. Neste trecho, a crônica seguiu em ritmo mais sereno.',
       topLanguages: 'Linguagens principais: {value}',
       stewards: 'Guardiões da crônica: {value}',
       posterFooter: 'REPO-SAGA · v{version} · gerado em {date}',
       metricCommits: 'commits',
-      metricContributors: 'contribuidores',
+      metricContributors: 'colaboradores',
       metricTags: 'tags',
       metricTopLanguages: 'linguagens',
       eraThemeTemplate: 'um capítulo marcado por {title}',
@@ -801,7 +913,7 @@ export const MANUAL_LOCALE_DATA = {
       'linting-theocracy': 'Teocracia do linting',
       'ai-priesthood': 'Sacerdócio da IA',
       'bug-plague': 'Praga de bugs',
-      'release-empire': 'Império das releases',
+      'release-empire': 'Império dos lançamentos',
     },
     fallbackEraNames: {
       'Settler Era: Habits Take Root': 'Era de assentamento: os hábitos criam raízes',
@@ -814,16 +926,22 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ apareceu em __PATH__ em __DATE__',
       bugMonthPeak: '__BUGS__ de __TOTAL__ commits em __MONTH__ tinham tema de bug (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" apareceu no caminho __PATH__',
-      testFilesJumped: 'Os arquivos de teste tocados por ano saltaram de __FROM__ (__FROM_YEAR__) para __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Os arquivos de teste tocados por ano saltaram de __FROM__ (__FROM_YEAR__) para __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ arquivos distintos mudaram em uma janela de 90 dias',
     },
   },
   ro: {
     labels: {
-      poster_subtitle: '{period} · {commits} commituri · {contributors} contributori · {tags} taguri',
+      poster_subtitle:
+        '{period} · {commits} commituri · {contributors} contributori · {tags} taguri',
       posterTagline: 'O CRONICĂ REPO-SAGA',
       definingEvents: 'Evenimente definitorii',
       quietStretch: '— un pasaj mai liniștit în cronică —',
+      eraSummary:
+        '{period}: {commits} commituri, {contributors} contributori, +{insertions} / -{deletions} linii. Evenimente definitorii: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commituri, {contributors} contributori, +{insertions} / -{deletions} linii. În acest pasaj, cronica a curs mai liniștit.',
       topLanguages: 'Limbaje principale: {value}',
       stewards: 'Păstrătorii cronicii: {value}',
       posterFooter: 'REPO-SAGA · v{version} · generat la {date}',
@@ -853,8 +971,10 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ a apărut în __PATH__ la __DATE__',
       bugMonthPeak: '__BUGS__ din __TOTAL__ commituri din __MONTH__ au avut temă de bug (__PCT__%)',
       aiHitInPath: '__DATE__: „__HIT__” a apărut în calea __PATH__',
-      testFilesJumped: 'Fișierele de test atinse pe an au sărit de la __FROM__ (__FROM_YEAR__) la __TO__ (__TO_YEAR__)',
-      distinctFilesWindow: '__FILES__ fișiere distincte s-au schimbat într-o fereastră de 90 de zile',
+      testFilesJumped:
+        'Fișierele de test atinse pe an au sărit de la __FROM__ (__FROM_YEAR__) la __TO__ (__TO_YEAR__)',
+      distinctFilesWindow:
+        '__FILES__ fișiere distincte s-au schimbat într-o fereastră de 90 de zile',
     },
   },
   ru: {
@@ -863,6 +983,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'ХРОНИКА REPO-SAGA',
       definingEvents: 'Определяющие события',
       quietStretch: '— более тихий отрезок летописи —',
+      eraSummary:
+        '{period}: {commits} коммитов, {contributors} участников, +{insertions} / -{deletions} строк. Определяющие события: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} коммитов, {contributors} участников, +{insertions} / -{deletions} строк. На этом отрезке летопись текла спокойнее.',
       topLanguages: 'Основные языки: {value}',
       stewards: 'Хранители летописи: {value}',
       posterFooter: 'REPO-SAGA · v{version} · сгенерировано {date}',
@@ -892,16 +1016,22 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ появился в __PATH__ __DATE__',
       bugMonthPeak: '__BUGS__ из __TOTAL__ коммитов в __MONTH__ были bug-тематики (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" появился в пути __PATH__',
-      testFilesJumped: 'Количество тестовых файлов, затронутых за год, выросло с __FROM__ (__FROM_YEAR__) до __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Количество тестовых файлов, затронутых за год, выросло с __FROM__ (__FROM_YEAR__) до __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ разных файлов изменились в 90-дневном окне',
     },
   },
   sv: {
     labels: {
-      poster_subtitle: '{period} · {commits} commits · {contributors} bidragsgivare · {tags} taggar',
+      poster_subtitle:
+        '{period} · {commits} commits · {contributors} bidragsgivare · {tags} taggar',
       posterTagline: 'EN REPO-SAGA-KRÖNIKA',
       definingEvents: 'Avgörande händelser',
       quietStretch: '— ett lugnare stycke i krönikan —',
+      eraSummary:
+        '{period}: {commits} commits, {contributors} bidragsgivare, +{insertions} / -{deletions} rader. Avgörande händelser: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commits, {contributors} bidragsgivare, +{insertions} / -{deletions} rader. I det här avsnittet gick krönikan fram i lugnare takt.',
       topLanguages: 'Viktigaste språk: {value}',
       stewards: 'Krönikans förvaltare: {value}',
       posterFooter: 'REPO-SAGA · v{version} · genererad {date}',
@@ -931,7 +1061,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ dök upp i __PATH__ den __DATE__',
       bugMonthPeak: '__BUGS__ av __TOTAL__ commits i __MONTH__ var buggpräglade (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" dök upp i sökvägen __PATH__',
-      testFilesJumped: 'Testfiler som berördes per år hoppade från __FROM__ (__FROM_YEAR__) till __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Testfiler som berördes per år hoppade från __FROM__ (__FROM_YEAR__) till __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ olika filer ändrades under ett 90-dagarsfönster',
     },
   },
@@ -941,6 +1072,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'พงศาวดาร repo-saga',
       definingEvents: 'เหตุการณ์ชี้ขาด',
       quietStretch: '— ช่วงอันสงบของพงศาวดาร —',
+      eraSummary:
+        '{period}: {commits} คอมมิต, {contributors} ผู้ร่วมพัฒนา, +{insertions} / -{deletions} บรรทัด. เหตุการณ์ชี้ขาด: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} คอมมิต, {contributors} ผู้ร่วมพัฒนา, +{insertions} / -{deletions} บรรทัด. ในช่วงนี้พงศาวดารดำเนินไปอย่างสงบยิ่งขึ้น.',
       topLanguages: 'ภาษาหลัก: {value}',
       stewards: 'ผู้พิทักษ์พงศาวดาร: {value}',
       posterFooter: 'REPO-SAGA · v{version} · สร้างเมื่อ {date}',
@@ -970,7 +1105,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ ปรากฏที่ __PATH__ เมื่อ __DATE__',
       bugMonthPeak: '__BUGS__ จาก __TOTAL__ คอมมิตใน __MONTH__ เป็นคอมมิตแนว bug (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" ปรากฏในพาธ __PATH__',
-      testFilesJumped: 'จำนวนไฟล์ทดสอบที่ถูกแตะต่อปีพุ่งจาก __FROM__ (__FROM_YEAR__) เป็น __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'จำนวนไฟล์ทดสอบที่ถูกแตะต่อปีพุ่งจาก __FROM__ (__FROM_YEAR__) เป็น __TO__ (__TO_YEAR__)',
       distinctFilesWindow: 'มีไฟล์ต่างกัน __FILES__ ไฟล์ที่เปลี่ยนในช่วง 90 วัน',
     },
   },
@@ -980,6 +1116,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'BİR REPO-SAGA KRONİĞİ',
       definingEvents: 'Belirleyici olaylar',
       quietStretch: '— kronikte daha sakin bir dönem —',
+      eraSummary:
+        '{period}: {commits} commit, {contributors} katkı sunan, +{insertions} / -{deletions} satır. Belirleyici olaylar: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commit, {contributors} katkı sunan, +{insertions} / -{deletions} satır. Bu bölümde kronik daha sakin aktı.',
       topLanguages: 'Başlıca diller: {value}',
       stewards: 'Kroniğin muhafızları: {value}',
       posterFooter: 'REPO-SAGA · v{version} · {date} tarihinde üretildi',
@@ -1007,9 +1147,11 @@ export const MANUAL_LOCALE_DATA = {
       tsconfigAppeared: 'tsconfig.json ilk kez __DATE__ tarihinde göründü (__PATH__)',
       tagsFoundBetween: '__START__ ile __END__ arasında __COUNT__ etiket bulundu',
       genericSignalArrived: '__KIND__ __DATE__ tarihinde __PATH__ içinde göründü',
-      bugMonthPeak: '__MONTH__ içindeki __TOTAL__ commitin __BUGS__ kadarı bug temalıydı (__PCT__%)',
+      bugMonthPeak:
+        '__MONTH__ içindeki __TOTAL__ commitin __BUGS__ kadarı bug temalıydı (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" __PATH__ yolunda göründü',
-      testFilesJumped: 'Yılda dokunulan test dosyaları __FROM__ (__FROM_YEAR__) seviyesinden __TO__ (__TO_YEAR__) seviyesine sıçradı',
+      testFilesJumped:
+        'Yılda dokunulan test dosyaları __FROM__ (__FROM_YEAR__) seviyesinden __TO__ (__TO_YEAR__) seviyesine sıçradı',
       distinctFilesWindow: '90 günlük pencerede __FILES__ farklı dosya değişti',
     },
   },
@@ -1019,6 +1161,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'ХРОНІКА REPO-SAGA',
       definingEvents: 'Визначальні події',
       quietStretch: '— тихіший відтинок літопису —',
+      eraSummary:
+        '{period}: {commits} комітів, {contributors} учасників, +{insertions} / -{deletions} рядків. Визначальні події: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} комітів, {contributors} учасників, +{insertions} / -{deletions} рядків. На цій ділянці літопис плинув спокійніше.',
       topLanguages: 'Основні мови: {value}',
       stewards: 'Хранителі літопису: {value}',
       posterFooter: 'REPO-SAGA · v{version} · згенеровано {date}',
@@ -1048,7 +1194,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ з’явився в __PATH__ __DATE__',
       bugMonthPeak: '__BUGS__ з __TOTAL__ комітів у __MONTH__ були bug-тематики (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" з’явився у шляху __PATH__',
-      testFilesJumped: 'Кількість тестових файлів, яких торкалися за рік, зросла з __FROM__ (__FROM_YEAR__) до __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Кількість тестових файлів, яких торкалися за рік, зросла з __FROM__ (__FROM_YEAR__) до __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ різних файлів змінилися в межах 90-денного вікна',
     },
   },
@@ -1058,6 +1205,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: 'MỘT BIÊN NIÊN SỬ REPO-SAGA',
       definingEvents: 'Sự kiện định hình',
       quietStretch: '— một quãng lặng của biên niên sử —',
+      eraSummary:
+        '{period}: {commits} commit, {contributors} người đóng góp, +{insertions} / -{deletions} dòng. Sự kiện định hình: {events}.',
+      eraSummaryQuiet:
+        '{period}: {commits} commit, {contributors} người đóng góp, +{insertions} / -{deletions} dòng. Ở đoạn này, biên niên sử trôi qua yên ả hơn.',
       topLanguages: 'Ngôn ngữ chính: {value}',
       stewards: 'Những người giữ biên niên sử: {value}',
       posterFooter: 'REPO-SAGA · v{version} · tạo ngày {date}',
@@ -1087,7 +1238,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ xuất hiện tại __PATH__ vào __DATE__',
       bugMonthPeak: '__BUGS__ trong __TOTAL__ commit của __MONTH__ mang chủ đề bug (__PCT__%)',
       aiHitInPath: '__DATE__: "__HIT__" xuất hiện trong đường dẫn __PATH__',
-      testFilesJumped: 'Số tệp kiểm thử được chạm tới mỗi năm tăng từ __FROM__ (__FROM_YEAR__) lên __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        'Số tệp kiểm thử được chạm tới mỗi năm tăng từ __FROM__ (__FROM_YEAR__) lên __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '__FILES__ tệp khác nhau đã thay đổi trong một cửa sổ 90 ngày',
     },
   },
@@ -1097,6 +1249,10 @@ export const MANUAL_LOCALE_DATA = {
       posterTagline: '一份 repo-saga 文明編年',
       definingEvents: '定義性事件',
       quietStretch: '— 編年史中的一段平靜時光 —',
+      eraSummary:
+        '{period}：{commits} 次提交，{contributors} 位貢獻者，+{insertions} / -{deletions} 行。定義性事件：{events}。',
+      eraSummaryQuiet:
+        '{period}：{commits} 次提交，{contributors} 位貢獻者，+{insertions} / -{deletions} 行。這一段相對平靜，編年史在此緩緩流過。',
       topLanguages: '主要語言：{value}',
       stewards: '編年的守護者：{value}',
       posterFooter: 'REPO-SAGA · v{version} · 生成於 {date}',
@@ -1127,7 +1283,8 @@ export const MANUAL_LOCALE_DATA = {
       genericSignalArrived: '__KIND__ 於 __DATE__ 出現在 __PATH__',
       bugMonthPeak: '__MONTH__ 的 __TOTAL__ 次提交中，有 __BUGS__ 次帶有 bug 主題 (__PCT__%)',
       aiHitInPath: '__DATE__：「__HIT__」出現在路徑 __PATH__ 中',
-      testFilesJumped: '每年觸及的測試檔案數從 __FROM__ (__FROM_YEAR__) 躍升至 __TO__ (__TO_YEAR__)',
+      testFilesJumped:
+        '每年觸及的測試檔案數從 __FROM__ (__FROM_YEAR__) 躍升至 __TO__ (__TO_YEAR__)',
       distinctFilesWindow: '90 天視窗內共變更 __FILES__ 個不同檔案',
     },
   },
