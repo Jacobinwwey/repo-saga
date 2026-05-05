@@ -12,6 +12,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'المساهمون',
       metricTags: 'الوسوم',
       metricTopLanguages: 'أبرز اللغات',
+      eraThemeTemplate: 'فصل تصوغه ملامح {title}',
+      fallbackTheme: 'فصل أهدأ بين اضطرابات أكبر',
     },
     eventTitles: {
       'typescript-invasion': 'اجتياح TypeScript',
@@ -49,6 +51,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'অবদানকারী',
       metricTags: 'ট্যাগ',
       metricTopLanguages: 'শীর্ষ ভাষা',
+      eraThemeTemplate: '{title}কে কেন্দ্র করে গড়ে ওঠা এক অধ্যায়',
+      fallbackTheme: 'বড় উত্থান-পতনের মাঝের তুলনামূলক শান্ত এক অধ্যায়',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript অভিযান',
@@ -86,6 +90,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'přispěvatelé',
       metricTags: 'tagy',
       metricTopLanguages: 'hlavní jazyky',
+      eraThemeTemplate: 'kapitola utvářená událostí {title}',
+      fallbackTheme: 'klidnější kapitola mezi výraznějšími zvraty',
     },
     eventTitles: {
       'typescript-invasion': 'Nástup TypeScriptu',
@@ -123,6 +129,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'bidragydere',
       metricTags: 'tags',
       metricTopLanguages: 'top-sprog',
+      eraThemeTemplate: 'et kapitel præget af {title}',
+      fallbackTheme: 'et roligere kapitel mellem større omvæltninger',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript-offensiven',
@@ -160,6 +168,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'Mitwirkende',
       metricTags: 'Tags',
       metricTopLanguages: 'Top-Sprachen',
+      eraThemeTemplate: 'ein von {title} geprägtes Kapitel',
+      fallbackTheme: 'ein ruhigeres Kapitel zwischen größeren Umbrüchen',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript-Vorstoss',
@@ -197,6 +207,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'συντελεστές',
       metricTags: 'tags',
       metricTopLanguages: 'κορυφαίες γλώσσες',
+      eraThemeTemplate: 'ένα κεφάλαιο που σφραγίστηκε από το γεγονός «{title}»',
+      fallbackTheme: 'ένα πιο ήσυχο κεφάλαιο ανάμεσα σε μεγαλύτερες ανατροπές',
     },
     eventTitles: {
       'typescript-invasion': 'Επέλαση του TypeScript',
@@ -213,7 +225,7 @@ export const MANUAL_LOCALE_DATA = {
     evidenceTemplates: {
       commitsInFirstDays: '__COMMITS__ commits στις πρώτες __DAYS__ ημέρες',
       tsconfigAppeared: 'Το tsconfig.json εμφανίστηκε για πρώτη φορά στις __DATE__ (__PATH__)',
-      tagsFoundBetween: 'Βρέθηκαν __COUNT__ tags μεταξύ __START__ και __END__',
+      tagsFoundBetween: 'Βρέθηκαν __COUNT__ ετικέτες μεταξύ __START__ και __END__',
       genericSignalArrived: 'Το __KIND__ εμφανίστηκε στο __PATH__ στις __DATE__',
       bugMonthPeak: '__BUGS__ από τα __TOTAL__ commits στο __MONTH__ είχαν θέμα bug (__PCT__%)',
       aiHitInPath: '__DATE__: το "__HIT__" εμφανίστηκε στη διαδρομή __PATH__',
@@ -234,6 +246,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'colaboradores',
       metricTags: 'tags',
       metricTopLanguages: 'lenguajes',
+      eraThemeTemplate: 'un capítulo marcado por {title}',
+      fallbackTheme: 'un capítulo más sereno entre grandes sacudidas',
     },
     eventTitles: {
       'typescript-invasion': 'Avance de TypeScript',
@@ -271,6 +285,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'tekijät',
       metricTags: 'tagit',
       metricTopLanguages: 'kielet',
+      eraThemeTemplate: 'luku, jota {title} leimaa',
+      fallbackTheme: 'rauhallisempi luku suurempien mullistusten välissä',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScriptin vyöry',
@@ -308,6 +324,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'contributeurs',
       metricTags: 'tags',
       metricTopLanguages: 'langages',
+      eraThemeTemplate: 'un chapitre marqué par {title}',
+      fallbackTheme: 'un chapitre plus calme entre de grands bouleversements',
     },
     eventTitles: {
       'typescript-invasion': 'Percée de TypeScript',
@@ -345,6 +363,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'תורמים',
       metricTags: 'תגיות',
       metricTopLanguages: 'שפות מובילות',
+      eraThemeTemplate: 'פרק שנחתם בחותם {title}',
+      fallbackTheme: 'פרק שקט יותר בין טלטלות גדולות יותר',
     },
     eventTitles: {
       'typescript-invasion': 'פלישת TypeScript',
@@ -382,6 +402,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'योगदानकर्ता',
       metricTags: 'टैग',
       metricTopLanguages: 'शीर्ष भाषाएँ',
+      eraThemeTemplate: '{title} से आकार लिया हुआ एक अध्याय',
+      fallbackTheme: 'बड़े उथल-पुथल के बीच का अपेक्षाकृत शांत अध्याय',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript का आक्रमण',
@@ -419,6 +441,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'közreműködők',
       metricTags: 'tagek',
       metricTopLanguages: 'nyelvek',
+      eraThemeTemplate: '{title} által kijelölt fejezet',
+      fallbackTheme: 'csendesebb fejezet a nagyobb felfordulások között',
     },
     eventTitles: {
       'typescript-invasion': 'A TypeScript térhódítása',
@@ -456,6 +480,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'kontributor',
       metricTags: 'tag',
       metricTopLanguages: 'bahasa',
+      eraThemeTemplate: 'bab yang dibentuk oleh {title}',
+      fallbackTheme: 'bab yang lebih tenang di antara gejolak yang lebih besar',
     },
     eventTitles: {
       'typescript-invasion': 'Gelombang TypeScript',
@@ -493,6 +519,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'contributori',
       metricTags: 'tag',
       metricTopLanguages: 'linguaggi',
+      eraThemeTemplate: 'un capitolo segnato da {title}',
+      fallbackTheme: 'un capitolo più quieto fra sconvolgimenti maggiori',
     },
     eventTitles: {
       'typescript-invasion': 'Avanzata di TypeScript',
@@ -530,6 +558,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: '貢献者',
       metricTags: 'タグ',
       metricTopLanguages: '主要言語',
+      eraThemeTemplate: '{title} に彩られた章',
+      fallbackTheme: '大きな激動の合間にある静かな章',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript侵攻',
@@ -545,7 +575,7 @@ export const MANUAL_LOCALE_DATA = {
     },
     evidenceTemplates: {
       commitsInFirstDays: '最初の__DAYS__日間で__COMMITS__コミット',
-      tsconfigAppeared: 'tsconfig.json は __DATE__ に初めて現れた (__PATH__)',
+      tsconfigAppeared: 'tsconfig.jsonは __DATE__ に初めて現れた (__PATH__)',
       tagsFoundBetween: '__START__ から __END__ の間に __COUNT__ 個のタグが見つかった',
       genericSignalArrived: '__KIND__ が __DATE__ に __PATH__ に現れた',
       bugMonthPeak: '__MONTH__ の __TOTAL__ コミット中 __BUGS__ 件が bug 系だった (__PCT__%)',
@@ -567,6 +597,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: '기여자',
       metricTags: '태그',
       metricTopLanguages: '주요 언어',
+      eraThemeTemplate: '{title}가 이끈 장',
+      fallbackTheme: '더 큰 격변 사이에 놓인 고요한 장',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript 침공',
@@ -582,7 +614,7 @@ export const MANUAL_LOCALE_DATA = {
     },
     evidenceTemplates: {
       commitsInFirstDays: '처음 __DAYS__일 동안 __COMMITS__개의 커밋',
-      tsconfigAppeared: 'tsconfig.json 이 __DATE__에 처음 나타났다 (__PATH__)',
+      tsconfigAppeared: 'tsconfig.json이 __DATE__에 처음 나타났다 (__PATH__)',
       tagsFoundBetween: '__START__부터 __END__ 사이에 __COUNT__개의 태그가 발견되었다',
       genericSignalArrived: '__KIND__가 __DATE__에 __PATH__에 나타났다',
       bugMonthPeak: '__MONTH__의 __TOTAL__개 커밋 중 __BUGS__개가 bug 테마였다 (__PCT__%)',
@@ -604,6 +636,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'penyumbang',
       metricTags: 'tag',
       metricTopLanguages: 'bahasa',
+      eraThemeTemplate: 'bab yang dibentuk oleh {title}',
+      fallbackTheme: 'bab yang lebih tenang di tengah pergolakan yang lebih besar',
     },
     eventTitles: {
       'typescript-invasion': 'Gelombang TypeScript',
@@ -641,6 +675,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'bijdragers',
       metricTags: 'tags',
       metricTopLanguages: 'talen',
+      eraThemeTemplate: 'een hoofdstuk getekend door {title}',
+      fallbackTheme: 'een rustiger hoofdstuk tussen grotere omwentelingen',
     },
     eventTitles: {
       'typescript-invasion': 'Opmars van TypeScript',
@@ -678,6 +714,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'bidragsytere',
       metricTags: 'tagger',
       metricTopLanguages: 'språk',
+      eraThemeTemplate: 'et kapittel preget av {title}',
+      fallbackTheme: 'et roligere kapittel mellom større omveltninger',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript-offensiven',
@@ -715,6 +753,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'współtwórcy',
       metricTags: 'tagi',
       metricTopLanguages: 'języki',
+      eraThemeTemplate: 'rozdział ukształtowany przez {title}',
+      fallbackTheme: 'cichszy rozdział między większymi wstrząsami',
     },
     eventTitles: {
       'typescript-invasion': 'Napór TypeScriptu',
@@ -752,6 +792,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'contribuidores',
       metricTags: 'tags',
       metricTopLanguages: 'linguagens',
+      eraThemeTemplate: 'um capítulo marcado por {title}',
+      fallbackTheme: 'um capítulo mais sereno entre grandes abalos',
     },
     eventTitles: {
       'typescript-invasion': 'Avanço do TypeScript',
@@ -789,6 +831,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'contributori',
       metricTags: 'taguri',
       metricTopLanguages: 'limbaje',
+      eraThemeTemplate: 'un capitol marcat de {title}',
+      fallbackTheme: 'un capitol mai liniștit între răsturnări mai mari',
     },
     eventTitles: {
       'typescript-invasion': 'Ofensiva TypeScript',
@@ -826,6 +870,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'участники',
       metricTags: 'теги',
       metricTopLanguages: 'языки',
+      eraThemeTemplate: 'глава, отмеченная {title}',
+      fallbackTheme: 'более тихая глава между более крупными потрясениями',
     },
     eventTitles: {
       'typescript-invasion': 'Наступление TypeScript',
@@ -863,6 +909,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'bidragsgivare',
       metricTags: 'taggar',
       metricTopLanguages: 'språk',
+      eraThemeTemplate: 'ett kapitel präglat av {title}',
+      fallbackTheme: 'ett lugnare kapitel mellan större omvälvningar',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript-offensiven',
@@ -900,6 +948,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'ผู้ร่วมพัฒนา',
       metricTags: 'แท็ก',
       metricTopLanguages: 'ภาษาหลัก',
+      eraThemeTemplate: 'บทที่มี {title} เป็นภาพแทนสำคัญ',
+      fallbackTheme: 'บทที่สงบกว่าระหว่างความปั่นป่วนครั้งใหญ่',
     },
     eventTitles: {
       'typescript-invasion': 'การรุกคืบของ TypeScript',
@@ -937,6 +987,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'katkı sunanlar',
       metricTags: 'etiketler',
       metricTopLanguages: 'diller',
+      eraThemeTemplate: '{title} ile şekillenen bir bölüm',
+      fallbackTheme: 'daha büyük sarsıntılar arasındaki daha sakin bir bölüm',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript istilası',
@@ -974,6 +1026,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'учасники',
       metricTags: 'теги',
       metricTopLanguages: 'мови',
+      eraThemeTemplate: 'розділ, позначений {title}',
+      fallbackTheme: 'тихіший розділ між більшими потрясіннями',
     },
     eventTitles: {
       'typescript-invasion': 'Наступ TypeScript',
@@ -1011,6 +1065,8 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: 'người đóng góp',
       metricTags: 'thẻ',
       metricTopLanguages: 'ngôn ngữ',
+      eraThemeTemplate: 'một chương được định hình bởi {title}',
+      fallbackTheme: 'một chương yên hơn giữa những biến động lớn hơn',
     },
     eventTitles: {
       'typescript-invasion': 'Làn sóng TypeScript',
@@ -1048,6 +1104,9 @@ export const MANUAL_LOCALE_DATA = {
       metricContributors: '貢獻者',
       metricTags: '標籤',
       metricTopLanguages: '主要語言',
+      civilizationOf: '{name} 的文明史',
+      eraThemeTemplate: '由 {title} 定義的篇章',
+      fallbackTheme: '大動盪之間相對平靜的篇章',
     },
     eventTitles: {
       'typescript-invasion': 'TypeScript 入侵',
@@ -1063,7 +1122,7 @@ export const MANUAL_LOCALE_DATA = {
     },
     evidenceTemplates: {
       commitsInFirstDays: '前 __DAYS__ 天內共有 __COMMITS__ 次提交',
-      tsconfigAppeared: 'tsconfig.json 首次出現於 __DATE__ (__PATH__)',
+      tsconfigAppeared: 'tsconfig.json 首次出現於 __DATE__（__PATH__）',
       tagsFoundBetween: '在 __START__ 與 __END__ 之間找到 __COUNT__ 個標籤',
       genericSignalArrived: '__KIND__ 於 __DATE__ 出現在 __PATH__',
       bugMonthPeak: '__MONTH__ 的 __TOTAL__ 次提交中，有 __BUGS__ 次帶有 bug 主題 (__PCT__%)',

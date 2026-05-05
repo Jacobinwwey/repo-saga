@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Saga } from '@repo-saga/core';
 import { renderSvg } from '../src/svg.js';
-import { label, translateEventTitle } from '../src/i18n.js';
+import { label, translateEvidence, translateEventTitle } from '../src/i18n.js';
 
 const fixture: Saga = {
   schemaVersion: 1,
@@ -215,5 +215,35 @@ describe('renderer i18n coverage', () => {
     expect(traditionalChineseSvg).toContain('定義性事件');
     expect(translateEventTitle('release-empire', 'zh_Hant' as never)).toBe('發布帝國');
     expect(traditionalChineseSvg).not.toContain('釋放帝國');
+  });
+
+  it('polishes previously awkward theme and evidence phrasing in selected locales', () => {
+    const finnishSvg = renderSvg(fixture, { lang: 'fi' as never });
+    const hindiSvg = renderSvg(fixture, { lang: 'hi' as never });
+    const hungarianSvg = renderSvg(fixture, { lang: 'hu' as never });
+    const japaneseSvg = renderSvg(fixture, { lang: 'ja' as never });
+    const koreanSvg = renderSvg(fixture, { lang: 'ko' as never });
+    const traditionalChineseSvg = renderSvg(fixture, { lang: 'zh_Hant' as never });
+
+    expect(finnishSvg).not.toContain('TypeScriptin vyöry:n');
+    expect(hindiSvg).not.toContain('द्वारा परिभाषित');
+    expect(hungarianSvg).not.toContain('a A TypeScript');
+    expect(japaneseSvg).not.toContain('チャプター');
+    expect(japaneseSvg).not.toContain('TypeScript侵攻 で定義された');
+    expect(koreanSvg).not.toContain('tsconfig.json 이');
+
+    expect(label('zh_Hant' as never, 'civilizationOf', { name: 'demo' })).toBe('demo 的文明史');
+    expect(translateEvidence('38 tags found between 2025-04-17 and 2026-05-03', 'el' as never)).toContain(
+      'ετικέτες',
+    );
+    expect(translateEvidence('tsconfig.json first appeared on 2025-04-17 (tsconfig.json)', 'ja' as never)).toBe(
+      'tsconfig.jsonは 2025-04-17 に初めて現れた (tsconfig.json)',
+    );
+    expect(translateEvidence('tsconfig.json first appeared on 2025-04-17 (tsconfig.json)', 'ko' as never)).toBe(
+      'tsconfig.json이 2025-04-17에 처음 나타났다 (tsconfig.json)',
+    );
+    expect(label('zh_Hant' as never, 'eraThemeTemplate', { title: 'TypeScript 入侵' })).toBe(
+      '由 TypeScript 入侵 定義的篇章',
+    );
   });
 });
