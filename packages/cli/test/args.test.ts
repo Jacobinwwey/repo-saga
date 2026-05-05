@@ -17,6 +17,23 @@ describe('CLI args', () => {
     expect(validateArgs(args)).toBe('--json is only supported with --no-server');
   });
 
+  it('accepts non-year timeline slicing flags', () => {
+    const args = parseArgs(['./repo', '--granularity', 'quarter']);
+    expect(args.source).toBe('./repo');
+    expect(args.granularity).toBe('quarter');
+    expect(validateArgs(args)).toBeUndefined();
+  });
+
+  it('requires a positive bucket size when slicing by days', () => {
+    expect(validateArgs(parseArgs(['./repo', '--bucket-days', '14']))).toBe(
+      '--bucket-days is only supported with --granularity days',
+    );
+    expect(validateArgs(parseArgs(['./repo', '--granularity', 'days']))).toBe(
+      '--granularity days requires --bucket-days <positive integer>',
+    );
+    expect(validateArgs(parseArgs(['./repo', '--granularity', 'days', '--bucket-days', '14']))).toBeUndefined();
+  });
+
   it('can route progress output away from stdout', () => {
     const lines: string[] = [];
     const log = progressLogger((line) => lines.push(line));

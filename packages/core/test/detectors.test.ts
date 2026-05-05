@@ -3,7 +3,7 @@ import { buildAnalyzedRepo } from '../src/analyzer.js';
 import { buildSagaStats } from '../src/index.js';
 import { runDetectors } from '../src/detectors.js';
 import { groupIntoEras } from '../src/eras.js';
-import type { RawCommit } from '../src/types.js';
+import type { DetectedEvent, RawCommit } from '../src/types.js';
 
 function commit(
   hash: string,
@@ -369,5 +369,78 @@ describe('eras grouping', () => {
     const eras = groupIntoEras(analyzed, events);
     expect(eras.length).toBeGreaterThan(0);
     expect(eras[0].startYear).toBe(2024);
+  });
+
+  it('can slice eras by quarter while preserving era-style naming', () => {
+    const commits: RawCommit[] = [
+      commit('q1a'.padEnd(40, '0'), '2024-01-10T00:00:00Z', 'chore: bootstrap', [
+        { path: 'src/bootstrap.ts', insertions: 20, deletions: 0 },
+      ]),
+      commit('q1b'.padEnd(40, '0'), '2024-03-14T00:00:00Z', 'feat: foundation', [
+        { path: 'src/foundation.ts', insertions: 30, deletions: 2 },
+      ]),
+      commit('q2a'.padEnd(40, '0'), '2024-04-02T00:00:00Z', 'chore: add tsconfig', [
+        { path: 'tsconfig.json', insertions: 14, deletions: 0 },
+      ]),
+      commit('q2b'.padEnd(40, '0'), '2024-05-05T00:00:00Z', 'feat: migrate to types', [
+        { path: 'src/typed.ts', insertions: 80, deletions: 3 },
+      ]),
+    ];
+    const analyzed = buildAnalyzedRepo({
+      repoName: 'quarterly',
+      source: '/quarterly',
+      resolvedPath: '/quarterly',
+      commits,
+      tags: [],
+    });
+    const events: DetectedEvent[] = [
+      {
+        id: 'typescript-invasion-2024-q2',
+        type: 'typescript-invasion',
+        title: 'TypeScript Invasion',
+        startDate: '2024-04-02T00:00:00Z',
+        endDate: '2024-06-30T23:59:59Z',
+        startYear: 2024,
+        endYear: 2024,
+        severity: 'major',
+        confidence: 0.92,
+        narrative: 'Type annotations arrived in force.',
+        evidence: ['tsconfig.json first appeared on 2024-04-02 (tsconfig.json)'],
+        score: 2.76,
+      },
+    ];
+
+    const eras = groupIntoEras(analyzed, events, { timelineGranularity: 'quarter' });
+    expect(eras.map((era) => era.displayStartLabel)).toEqual(['2024 Q1', '2024 Q2']);
+    expect(eras[0].name).toBe('Founding Era: A Chronicle Begins');
+    expect(eras[1].name).toBe('Migration Era: TypeScript Invasion');
+  });
+
+  it('anchors custom day buckets to the first commit date', () => {
+    const commits: RawCommit[] = [
+      commit('d1'.padEnd(40, '0'), '2024-01-01T00:00:00Z', 'chore: bootstrap', [
+        { path: 'src/bootstrap.ts', insertions: 10, deletions: 0 },
+      ]),
+      commit('d2'.padEnd(40, '0'), '2024-01-18T00:00:00Z', 'feat: second wave', [
+        { path: 'src/second.ts', insertions: 12, deletions: 1 },
+      ]),
+      commit('d3'.padEnd(40, '0'), '2024-02-01T00:00:00Z', 'fix: third wave', [
+        { path: 'src/third.ts', insertions: 8, deletions: 2 },
+      ]),
+    ];
+    const analyzed = buildAnalyzedRepo({
+      repoName: 'daily',
+      source: '/daily',
+      resolvedPath: '/daily',
+      commits,
+      tags: [],
+    });
+
+    const eras = groupIntoEras(analyzed, [], { timelineGranularity: 'days', bucketDays: 14 });
+    expect(eras.map((era) => era.displayStartLabel)).toEqual([
+      '2024-01-01 +14d',
+      '2024-01-15 +14d',
+      '2024-01-29 +14d',
+    ]);
   });
 });

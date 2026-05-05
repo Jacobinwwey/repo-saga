@@ -140,4 +140,48 @@ describe('renderMarkdown', () => {
     expect(md).toContain('TypeScript 在 2021 年越过代码插入量的 50%');
     expect(md).toContain('在 2015-12-05 至 2025-09-30 之间共发现 64 个 tag');
   });
+
+  it('uses display period labels and translates temporal evidence', () => {
+    const quarterly: Saga = {
+      ...fixture,
+      repo: {
+        ...fixture.repo,
+        firstPeriodLabel: '2024 Q1',
+        lastPeriodLabel: '2024 Q2',
+      },
+      eras: [
+        {
+          ...fixture.eras[0],
+          startYear: 2001,
+          endYear: 2001,
+          displayStartLabel: '2024 Q1',
+          displayEndLabel: '2024 Q1',
+          evidence: [
+            'Period 2024 Q1 ran from 2024-01-01 to 2024-03-31',
+            '12 commits, 3 contributors, +120 / -40 lines',
+            'Opened with chore: bootstrap',
+            'Closed with feat: foundation',
+          ],
+        },
+      ],
+      events: [
+        {
+          ...fixture.events[0],
+          startYear: 2001,
+          endYear: 2001,
+          displayStartLabel: '2024 Q1',
+          displayEndLabel: '2024 Q1',
+        },
+      ],
+    };
+
+    const md = renderMarkdown(quarterly, { lang: 'zh' });
+    expect(md).toContain('2024 Q1–2024 Q2，1,234 次提交');
+    expect(md).toContain('## 远古纪元: 初始混沌, 2024 Q1');
+    expect(md).toContain('### 初始混沌 (2024 Q1)');
+    expect(md).toContain('时间段 2024 Q1 从 2024-01-01 延续至 2024-03-31');
+    expect(md).toContain('12 次提交，3 位贡献者，+120 / -40 行');
+    expect(md).toContain('以「chore: bootstrap」开篇');
+    expect(md).toContain('以「feat: foundation」收尾');
+  });
 });
