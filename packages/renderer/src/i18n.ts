@@ -368,7 +368,7 @@ export type LabelKey = keyof typeof LABELS.en;
 export function label(lang: Lang, key: LabelKey, vars: Record<string, string | number> = {}): string {
   const locale = resolveLang(lang);
   const tpl = localeLabel(locale, key);
-  return normalizeLocalizedText(key, tpl).replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
+  return interpolateTemplate(normalizeLocalizedText(key, tpl), vars);
 }
 
 export function translateEventTitle(type: EventType, lang: Lang): string {
@@ -717,4 +717,32 @@ function genericEvidence(
   const template = GENERATED_LOCALE_DATA[locale as Exclude<SupportedLang, 'en' | 'zh'>]?.evidenceTemplates?.[key];
   if (!template) return '';
   return template.replace(/__([A-Z_]+)__/g, (_, token) => String(vars[token] ?? ''));
+}
+
+function interpolateTemplate(template: string, vars: Record<string, string | number>): string {
+  if (!template) return template;
+  const lookup = buildVarLookup(vars);
+  return template
+    .replace(/\{(\w+)\}/g, (_, key) => lookup.get(key) ?? '')
+    .replace(/__([A-Za-z0-9_]+)__/g, (_, key) => lookup.get(key) ?? '');
+}
+
+function buildVarLookup(vars: Record<string, string | number>): Map<string, string> {
+  const lookup = new Map<string, string>();
+  for (const [key, value] of Object.entries(vars)) {
+    const stringValue = String(value);
+    const upperSnake = toUpperSnakeCase(key);
+    const lowerSnake = upperSnake.toLowerCase();
+    for (const variant of [key, key.toLowerCase(), key.toUpperCase(), upperSnake, lowerSnake]) {
+      lookup.set(variant, stringValue);
+    }
+  }
+  return lookup;
+}
+
+function toUpperSnakeCase(value: string): string {
+  return value
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/[\s-]+/g, '_')
+    .toUpperCase();
 }

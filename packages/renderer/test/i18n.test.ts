@@ -116,6 +116,7 @@ describe('renderer i18n coverage', () => {
       expect(localizedTitle).not.toBe(englishTitle);
       expect(svg).toContain(localizedHeading);
       expect(svg).toContain(localizedTitle);
+      expect(svg).not.toMatch(/__[A-Z0-9_]+__/);
     }
   });
 
@@ -124,5 +125,22 @@ describe('renderer i18n coverage', () => {
     expect(translateEventTitle('initial-chaos', 'zh_Hant' as never)).not.toBe(
       translateEventTitle('initial-chaos', 'zh' as never),
     );
+  });
+
+  it('interpolates generated locale label templates that still use double-underscore tokens', () => {
+    expect(label('ja' as never, 'civilizationOf', { name: 'demo' })).toContain('demo');
+    expect(label('zh_Hant' as never, 'eraThemeTemplate', { title: 'TypeScript 入侵' })).toContain(
+      'TypeScript 入侵',
+    );
+    expect(
+      label('es' as never, 'eraSummary', {
+        period: '2025 Q2',
+        commits: 10,
+        contributors: 2,
+        insertions: 300,
+        deletions: 40,
+        events: 'Caos inicial',
+      }),
+    ).not.toMatch(/__[A-Z0-9_]+__/);
   });
 });
