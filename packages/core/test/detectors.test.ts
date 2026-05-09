@@ -443,4 +443,37 @@ describe('eras grouping', () => {
       '2024-01-29 +14d',
     ]);
   });
+
+  it('coalesces very fine-grained temporal buckets so output size stays bounded', () => {
+    const commits: RawCommit[] = Array.from({ length: 130 }, (_value, index) =>
+      commit(
+        `bounded-${index}`.padEnd(40, '0'),
+        new Date(Date.UTC(2024, 0, index + 1)).toISOString(),
+        `chore: day ${index + 1}`,
+        [{ path: `src/day-${index + 1}.ts`, insertions: 1, deletions: 0 }],
+      ),
+    );
+    const analyzed = buildAnalyzedRepo({
+      repoName: 'bounded-daily',
+      source: '/bounded-daily',
+      resolvedPath: '/bounded-daily',
+      commits,
+      tags: [],
+    });
+
+    const eras = groupIntoEras(analyzed, [], { timelineGranularity: 'days', bucketDays: 1 });
+    expect(eras).toHaveLength(65);
+    expect(eras[0]).toMatchObject({
+      displayStartLabel: '2024-01-01 +1d–2024-01-02 +1d',
+      startDate: '2024-01-01',
+      endDate: '2024-01-02',
+      summaryStats: expect.objectContaining({ commits: 2 }),
+    });
+    expect(eras.at(-1)).toMatchObject({
+      displayStartLabel: '2024-05-08 +1d–2024-05-09 +1d',
+      startDate: '2024-05-08',
+      endDate: '2024-05-09',
+      summaryStats: expect.objectContaining({ commits: 2 }),
+    });
+  });
 });

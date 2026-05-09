@@ -122,6 +122,11 @@ pnpm --filter repo-saga link --global
 }
 ```
 
+当 `timelineGranularity` 不是 `year` 时，渲染器应优先使用 eras/events 上的
+`displayStartLabel` / `displayEndLabel` 和 `startDate` / `endDate`。旧有的
+`startYear` / `endYear` 字段会继续保留，用于排序和重叠判断兼容；它们可能是
+内部时间轴值，不一定是真实自然年。
+
 ### `saga.md`
 
 可打印 / 可粘贴的 Markdown 编年史（中英文都支持）：
@@ -144,7 +149,7 @@ pnpm --filter repo-saga link --global
 
 独立、可换主题的 SVG 海报，内嵌自包含的 PNG data URI 装饰资源。看起来像桌游里的"项目历史地图"。
 
-可通过 `--granularity year|quarter|month|days` 改变纪元切分尺度。渲染层保持同一套海报风格，只把时间标签替换为 `2024 Q1`、`2024-01-01 +30d` 这类 period label。
+可通过 `--granularity year|quarter|month|days` 改变纪元切分尺度。渲染层保持同一套海报风格，只把时间标签替换为 `2024 Q1`、`2024-01-01 +30d` 这类 period label。过细的时间线会被自动合并，以限制 JSON、SVG 和 Web UI 的体积。
 
 ## Web UI
 

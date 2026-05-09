@@ -60,6 +60,8 @@ const EVENT_TO_ERA: Record<EventType, { prefix: string; theme: string }> = {
   },
 };
 
+const MAX_TEMPORAL_ERAS = 120;
+
 export interface EraOptions {
   /** desired era count clamp (default 3..7) */
   minEras?: number;
@@ -224,7 +226,10 @@ function buildTimelineBucketsForRepo(
   bucketDays?: number,
 ): TimelineBucket[] {
   const daysAnchorDate = granularity === 'days' ? firstCommitDay(repo.commits) : undefined;
-  return buildTimelineBuckets(repo.commits, granularity, bucketDays, daysAnchorDate);
+  return coalesceTimelineBuckets(
+    buildTimelineBuckets(repo.commits, granularity, bucketDays, daysAnchorDate),
+    MAX_TEMPORAL_ERAS,
+  );
 }
 
 function buildTimelineBuckets(
@@ -257,12 +262,40 @@ function buildTimelineBuckets(
     .sort((left, right) => left.startDate.localeCompare(right.startDate))
     .map((bucket) => ({
       ...bucket,
-      contributors: new Set(
-        bucket.commits
-          .map((commit) => (commit.authorEmail || commit.authorName || 'unknown').toLowerCase())
-          .filter(Boolean),
-      ).size,
+      contributors: countBucketContributors(bucket.commits),
     }));
+}
+
+function coalesceTimelineBuckets(buckets: TimelineBucket[], maxBuckets: number): TimelineBucket[] {
+  if (buckets.length <= maxBuckets) return buckets;
+
+  const groupSize = Math.ceil(buckets.length / maxBuckets);
+  const output: TimelineBucket[] = [];
+  for (let i = 0; i < buckets.length; i += groupSize) {
+    const group = buckets.slice(i, i + groupSize);
+    const first = group[0];
+    const last = group[group.length - 1];
+    const commits = group.flatMap((bucket) => bucket.commits);
+    output.push({
+      key: first.key === last.key ? first.key : `${first.key}..${last.key}`,
+      label: first.label === last.label ? first.label : `${first.label}–${last.label}`,
+      startDate: first.startDate,
+      endDate: last.endDate,
+      commits,
+      contributors: countBucketContributors(commits),
+      insertions: group.reduce((sum, bucket) => sum + bucket.insertions, 0),
+      deletions: group.reduce((sum, bucket) => sum + bucket.deletions, 0),
+    });
+  }
+  return output;
+}
+
+function countBucketContributors(commits: RawCommit[]): number {
+  return new Set(
+    commits
+      .map((commit) => (commit.authorEmail || commit.authorName || 'unknown').toLowerCase())
+      .filter(Boolean),
+  ).size;
 }
 
 function composeTemporalSummary(bucket: TimelineBucket, events: DetectedEvent[]): string {

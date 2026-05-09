@@ -121,6 +121,12 @@ A structured snapshot of everything the analysis discovered:
 }
 ```
 
+When `timelineGranularity` is not `year`, renderers should prefer
+`displayStartLabel` / `displayEndLabel` and `startDate` / `endDate` on eras and
+events. The legacy `startYear` / `endYear` fields are kept for ordering and
+overlap compatibility, and may contain synthetic axis values rather than real
+calendar years.
+
 ### `saga.md`
 
 A printable / pasteable Markdown chronicle:
@@ -143,7 +149,7 @@ Evidence:
 
 A standalone, themable SVG poster with self-contained raster ornaments embedded as PNG data URIs. Looks like a tabletop "history of a project" map.
 
-Use `--granularity year|quarter|month|days` to change how eras are carved. The renderer keeps the same poster style and swaps in period labels such as `2024 Q1` or `2024-01-01 +30d`.
+Use `--granularity year|quarter|month|days` to change how eras are carved. The renderer keeps the same poster style and swaps in period labels such as `2024 Q1` or `2024-01-01 +30d`. Very fine-grained timelines are coalesced to keep the JSON, SVG, and web UI bounded.
 
 ## Web UI
 

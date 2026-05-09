@@ -168,7 +168,7 @@ export const UI_COPY: Record<UiLang, UiCopy> = {
       workspaceKicker: 'Interactive atlas',
       workspaceTitle: 'Travel the repo timeline without losing the evidence trail',
       workspaceBody:
-        'Use the date slider for active files, active contributors, and live detector events; switch perspective to rewrite the saga from one contributor’s point of view.',
+        'Use the date slider for active files, active contributors, and live detector events; switch perspective to rewrite the saga from one contributor’s point of view. Contributor totals are grouped by calendar year even when eras use quarter, month, or custom-day labels.',
       timeTravel: 'Time travel',
       timeTravelSubtitle: '{date} snapshot · ±30 days',
       activeCommits: 'active commits',
@@ -180,10 +180,10 @@ export const UI_COPY: Record<UiLang, UiCopy> = {
       contributorVoice: 'You joined in {firstYear}; across this chronicle you made {commits} commits.',
       perspectiveNote: 'Perspective: {name}. “You joined in {firstYear}…” is applied to overlapping events.',
       contributorNarrativePrefix: 'You joined in {firstYear}. {narrative}',
-      yearCommits: 'commits in selected year',
+      yearCommits: 'commits in selected calendar year',
       activeYears: 'active years',
       touchedFiles: 'frequent files',
-      topContributorsAtYear: 'Top contributors in {year}',
+      topContributorsAtYear: 'Top contributors in calendar year {year}',
       evidenceLinks: 'Evidence links',
       evidenceLinkKinds: {
         commit: 'commit',
@@ -284,7 +284,7 @@ export const UI_COPY: Record<UiLang, UiCopy> = {
       workspaceKicker: '交互星图',
       workspaceTitle: '拖动任意日期，直接看见 D ±30 天的文件、贡献者和检测器事件',
       workspaceBody:
-        '时间旅行滑块会展示该日期 ±30 天语义下的年度快照：活跃文件 top10、活跃贡献者、当时正在发生的 detector 事件；也可以切到某位贡献者视角重写叙事。',
+        '时间旅行滑块会展示该日期 ±30 天语义下的快照：活跃文件 top10、活跃贡献者、当时正在发生的 detector 事件；也可以切到某位贡献者视角重写叙事。贡献者统计仍按自然年汇总，即使纪元使用季度、月份或自定义天数标签。',
       timeTravel: '时间旅行',
       timeTravelSubtitle: '{date} 快照 · ±30 天',
       activeCommits: '活跃提交',
@@ -296,10 +296,10 @@ export const UI_COPY: Record<UiLang, UiCopy> = {
       contributorVoice: '你在 {firstYear} 年加入；整段编年史里你贡献了 {commits} 次提交。',
       perspectiveNote: '当前视角：{name}。与 ta 时间线重叠的事件会以“你在 {firstYear} 年加入……”重写。',
       contributorNarrativePrefix: '你在 {firstYear} 年加入。{narrative}',
-      yearCommits: '所选年份提交',
+      yearCommits: '所选自然年提交',
       activeYears: '活跃年份',
       touchedFiles: '常触及文件',
-      topContributorsAtYear: '{year} 年贡献者 top',
+      topContributorsAtYear: '{year} 自然年贡献者 top',
       evidenceLinks: '证据链接',
       evidenceLinkKinds: {
         commit: 'commit',
