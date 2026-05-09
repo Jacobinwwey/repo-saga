@@ -34,7 +34,7 @@ export function renderMarkdown(saga: Saga, opts: MarkdownOptions = {}): string {
 
   for (const era of saga.eras) {
     const localized = translateEra(era, saga.events, lang);
-    lines.push(`## ${escape(localized.name)}, ${era.startYear}–${era.endYear}`);
+    lines.push(`## ${escape(localized.name)}, ${displayEraPeriod(era)}`);
     lines.push('');
     lines.push(`> _${escape(localized.theme)}_`);
     lines.push('');
@@ -120,7 +120,9 @@ function isEventInEra(event: DetectedEvent, era: Era): boolean {
 }
 
 function _subtitle(saga: Saga, lang: Lang): string {
-  const period = `${shortYear(saga.repo.firstCommitDate)}–${shortYear(saga.repo.lastCommitDate)}`;
+  const period = saga.repo.firstPeriodLabel && saga.repo.lastPeriodLabel
+    ? `${saga.repo.firstPeriodLabel}–${saga.repo.lastPeriodLabel}`
+    : `${shortYear(saga.repo.firstCommitDate)}–${shortYear(saga.repo.lastCommitDate)}`;
   return label(lang, 'chronicleSubtitle', {
     period,
     commits: saga.repo.commitCount.toLocaleString(),
@@ -136,8 +138,16 @@ function shortYear(iso: string): string {
 }
 
 function formatRange(event: DetectedEvent): string {
-  if (event.startYear === event.endYear) return String(event.startYear);
-  return `${event.startYear}–${event.endYear}`;
+  const start = event.displayStartLabel ?? String(event.startYear);
+  const end = event.displayEndLabel ?? String(event.endYear);
+  if (start === end) return start;
+  return `${start}–${end}`;
+}
+
+function displayEraPeriod(era: Era): string {
+  const start = era.displayStartLabel ?? String(era.startYear);
+  const end = era.displayEndLabel ?? String(era.endYear);
+  return start === end ? start : `${start}–${end}`;
 }
 
 function escape(s: string): string {

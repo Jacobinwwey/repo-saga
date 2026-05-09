@@ -402,7 +402,9 @@ export function translateEvent(event: DetectedEvent, lang: Lang): DetectedEvent 
 export function composeEraSummary(era: Era, events: DetectedEvent[], lang: Lang): string {
   const stats = era.summaryStats;
   if (!stats) return era.summary;
-  const period = era.startYear === era.endYear ? `${era.startYear}` : `${era.startYear}–${era.endYear}`;
+  const startLabel = era.displayStartLabel ?? `${era.startYear}`;
+  const endLabel = era.displayEndLabel ?? `${era.endYear}`;
+  const period = startLabel === endLabel ? startLabel : `${startLabel}–${endLabel}`;
   const dominant = era.dominantEvents
     .map((id) => events.find((e) => e.id === id))
     .filter((e): e is DetectedEvent => Boolean(e))
@@ -491,8 +493,12 @@ const EVIDENCE_PATTERNS: Array<readonly [RegExp, (m: RegExpMatchArray, lang: Lan
   [/^(.+?) (?:appeared|arrived|introduced) at (.+) on (\S+)$/, (m) => `${m[1]} 于 ${m[3]} 出现在 ${m[2]}`],
   // era-level: "Spanned X year(s) with Y commits"
   [/^Spanned (\d+) year\(s\) with (\d[\d,]*) commits$/, (m) => `横跨 ${m[1]} 年，共 ${m[2]} 次提交`],
+  [/^Period (.+) ran from (\S+) to (\S+)$/, (m) => `时间段 ${m[1]} 从 ${m[2]} 延续至 ${m[3]}`],
+  [/^(\d[\d,]*) commits, (\d+) contributors, \+(\d[\d,]*) \/ -(\d[\d,]*) lines$/, (m) => `${m[1]} 次提交，${m[2]} 位贡献者，+${m[3]} / -${m[4]} 行`],
+  [/^Opened with (.+)$/, (m) => `以「${m[1]}」开篇`],
+  [/^Closed with (.+)$/, (m) => `以「${m[1]}」收尾`],
   // era-level: '${title} (yr) — ${rest}' or '${title} (a–b) — ${rest}'
-  [/^(.+?) \((\d{4}(?:[–-]\d{4})?)\) — (.+)$/, (m, lang) => {
+  [/^(.+?) \(([^)]+)\) — (.+)$/, (m, lang) => {
     const title = ENGLISH_TITLE_TO_TYPE[m[1]];
     const localizedTitle = title ? translateEventTitle(title, lang) : m[1];
     const rest = translateEvidence(m[3], lang);

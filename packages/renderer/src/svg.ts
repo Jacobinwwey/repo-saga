@@ -365,7 +365,10 @@ function renderHeader(
 
   const title = label(lang, 'civilizationOf', { name: saga.repo.name });
   const subtitle = label(lang, 'poster_subtitle', {
-    period: `${shortYear(saga.repo.firstCommitDate)} — ${shortYear(saga.repo.lastCommitDate)}`,
+    period:
+      saga.repo.firstPeriodLabel && saga.repo.lastPeriodLabel
+        ? `${saga.repo.firstPeriodLabel} — ${saga.repo.lastPeriodLabel}`
+        : `${shortYear(saga.repo.firstCommitDate)} — ${shortYear(saga.repo.lastCommitDate)}`,
     commits: saga.repo.commitCount.toLocaleString(),
     contributors: saga.repo.contributors,
     tags: saga.repo.tagCount,
@@ -401,13 +404,11 @@ function renderTimelineStrip(
   const x0 = margin + 60;
   const x1 = width - margin - 60;
   const w = x1 - x0;
-  const startYear = yearOf(saga.repo.firstCommitDate);
-  const endYear = yearOf(saga.repo.lastCommitDate);
-  const displaySpanYears = Math.max(1, endYear - startYear);
-  const axisEndYear = endYear + 1;
-  const axisSpanYears = Math.max(1, axisEndYear - startYear);
+  const axisStart = eras[0]?.startYear ?? yearOf(saga.repo.firstCommitDate);
+  const axisEndExclusive = (eras[eras.length - 1]?.endYear ?? yearOf(saga.repo.lastCommitDate)) + 1;
+  const axisSpanYears = Math.max(1, axisEndExclusive - axisStart);
   const scaleYear = (year: number) =>
-    x0 + ((Math.min(axisEndYear, Math.max(startYear, year)) - startYear) / axisSpanYears) * w;
+    x0 + ((Math.min(axisEndExclusive, Math.max(axisStart, year)) - axisStart) / axisSpanYears) * w;
 
   const trackY = startY + height / 2;
   const out: string[] = [];
@@ -447,27 +448,20 @@ function renderTimelineStrip(
     );
   }
 
-  // year ticks: start with the requested density, then dedupe so labels never
-  // collide. Two safeguards: (a) drop a tick if its year duplicates the
-  // previous tick's year (Math.round can yield runs like 2020,2020,2021);
-  // (b) drop a tick if it lands within ~28px of the previous label, which
-  // keeps adjacent years like "2020 2021" from kissing.
-  const requested = Math.min(8, Math.max(2, displaySpanYears + 1));
-  const minLabelGap = 28;
-  let lastYear = -Infinity;
-  let lastX = -Infinity;
-  for (let i = 0; i < requested; i++) {
-    const yearAtTick = startYear + Math.round((i / (requested - 1)) * displaySpanYears);
-    const tx = scaleYear(yearAtTick);
-    if (yearAtTick === lastYear) continue;
-    if (tx - lastX < minLabelGap) continue;
-    lastYear = yearAtTick;
-    lastX = tx;
+  // Keep the original timeline density bounded even when eras are sliced by
+  // quarter/month/days. We sample up to 8 evenly-spaced period labels so the
+  // axis stays legible on long histories.
+  const tickSources = sampleTimelineTicks(eras.map((era) => ({
+    x: scaleYear(era.startYear),
+    label: era.displayStartLabel ?? String(era.startYear),
+  })));
+  for (const tick of tickSources) {
+    const tx = tick.x;
     out.push(
       `<line x1="${tx}" y1="${trackY + 10}" x2="${tx}" y2="${trackY + 16}" stroke="${theme.inkSoft}" stroke-width="1"/>`,
     );
     out.push(
-      `<text x="${tx}" y="${trackY + 46}" text-anchor="middle" font-size="11" fill="${theme.inkSoft}">${yearAtTick}</text>`,
+      `<text x="${tx}" y="${trackY + 46}" text-anchor="middle" font-size="11" fill="${theme.inkSoft}">${escapeXml(tick.label)}</text>`,
     );
   }
   return out.join('');
@@ -521,7 +515,7 @@ function renderEra(
   const evX = cardX + cardW * 0.55;
   const nameMaxW = Math.max(300, evX - nameX - 38);
   const fittedName = fitTextLine(localized.name, 28, nameMaxW, 20);
-  const fittedTheme = fitTextLine(`${era.startYear}–${era.endYear}  ·  ${localized.theme}`, 14, nameMaxW, 10);
+  const fittedTheme = fitTextLine(`${displayEraPeriod(era)}  ·  ${localized.theme}`, 14, nameMaxW, 10);
   out.push(
     `<text x="${nameX}" y="${nameY}" font-family=${attr(theme.fontTitle)} font-size="${fittedName.fontSize}" font-weight="700" fill="${theme.ink}">${escapeXml(fittedName.text)}</text>`,
   );
@@ -553,8 +547,7 @@ function renderEra(
   } else {
     for (const ev of eventsInEra) {
       const dot = `<circle cx="${evX + 6}" cy="${lineY - 4}" r="5" fill="${color}" stroke="${theme.ink}" stroke-width="0.6"/>`;
-      const range =
-        ev.startYear === ev.endYear ? `${ev.startYear}` : `${ev.startYear}–${ev.endYear}`;
+      const range = displayEventPeriod(ev);
       const localizedTitle = translateEventTitle(ev.type, lang);
       const titleLine = fitTextLine(`${localizedTitle}  · ${range}`, 14, evTextMaxW - 18, 10);
       out.push(dot);
@@ -724,6 +717,31 @@ function eraShortName(name: string): string {
   // "Ancient Era: Initial Chaos" -> "Ancient Era"; works for both ":" and "："
   const colon = Math.max(name.indexOf(':'), name.indexOf('：'));
   return colon > 0 ? name.slice(0, colon) : name;
+}
+
+function sampleTimelineTicks<T>(ticks: T[]): T[] {
+  if (ticks.length <= 8) return ticks;
+  const sampled: T[] = [];
+  const seen = new Set<number>();
+  for (let i = 0; i < 8; i++) {
+    const index = Math.round((i / 7) * (ticks.length - 1));
+    if (seen.has(index)) continue;
+    seen.add(index);
+    sampled.push(ticks[index]);
+  }
+  return sampled;
+}
+
+function displayEraPeriod(era: Era): string {
+  const start = era.displayStartLabel ?? String(era.startYear);
+  const end = era.displayEndLabel ?? String(era.endYear);
+  return start === end ? start : `${start}–${end}`;
+}
+
+function displayEventPeriod(event: DetectedEvent): string {
+  const start = event.displayStartLabel ?? String(event.startYear);
+  const end = event.displayEndLabel ?? String(event.endYear);
+  return start === end ? start : `${start}–${end}`;
 }
 
 function toRoman(n: number): string {

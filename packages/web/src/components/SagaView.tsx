@@ -58,7 +58,7 @@ export function SagaView({
 
   const activeEra = localizedSaga.eras.find((e) => e.id === selectedEra) ?? localizedSaga.eras[0];
   const eventsInEra = activeEra
-    ? perspectiveEvents.filter((ev) => ev.endYear >= activeEra.startYear && ev.startYear <= activeEra.endYear)
+    ? perspectiveEvents.filter((ev) => overlapsEra(ev, activeEra))
     : [];
 
   const localizedJson = useMemo(
@@ -103,8 +103,10 @@ export function SagaView({
   function onTimeTravel(snapshotIndex: number) {
     setSelectedSnapshotIndex(snapshotIndex);
     const snapshot = timeTravelSnapshots[snapshotIndex];
-    const year = snapshot ? Number(snapshot.date.slice(0, 4)) : selectedYear;
-    const eraAtYear = localizedSaga.eras.find((era) => era.startYear <= year && era.endYear >= year);
+    const snapshotDate = snapshot?.date;
+    const eraAtYear = snapshotDate
+      ? localizedSaga.eras.find((era) => eraContainsDate(era, snapshotDate))
+      : localizedSaga.eras.find((era) => era.startYear <= selectedYear && era.endYear >= selectedYear);
     if (eraAtYear) setSelectedEra(eraAtYear.id);
   }
 
@@ -203,7 +205,11 @@ export function SagaView({
                 className={`rs-era-item${era.id === activeEra?.id ? ' rs-active' : ''}`}
                 onClick={() => {
                   setSelectedEra(era.id);
-                  const eraSnapshotIndex = findNearestSnapshotIndex(timeTravelSnapshots, era.startYear, Math.min(selectedSnapshotIndex, maxSnapshotIndex));
+                  const eraSnapshotIndex = findNearestSnapshotIndex(
+                    timeTravelSnapshots,
+                    era,
+                    Math.min(selectedSnapshotIndex, maxSnapshotIndex),
+                  );
                   setSelectedSnapshotIndex(eraSnapshotIndex);
                 }}
               >
@@ -212,7 +218,7 @@ export function SagaView({
                   <h3>{era.name}</h3>
                   <p>
                     <small>
-                      {era.startYear}–{era.endYear} · {era.theme}
+                      {displayEraPeriod(era)} · {era.theme}
                     </small>
                   </p>
                   <p className="rs-era-summary">{eraSummary(era)}</p>
@@ -427,7 +433,7 @@ function EventCard({
       <header>
         <strong>{event.title}</strong>
         <span className="rs-event-range">
-          {event.startYear === event.endYear ? String(event.startYear) : `${event.startYear}–${event.endYear}`}
+          {displayEventPeriod(event)}
         </span>
         <span className="rs-event-sev">{copy.severityLabels[event.severity]}</span>
       </header>
@@ -578,7 +584,9 @@ function yearsInSaga(saga: Saga): number[] {
   const years = new Set<number>();
   for (const year of Object.keys(saga.stats.commitsByYear)) years.add(Number(year));
   for (const era of saga.eras) {
-    for (let year = era.startYear; year <= era.endYear; year++) years.add(year);
+    const startYear = yearFromIso(era.startDate) ?? era.startYear;
+    const endYear = yearFromIso(era.endDate) ?? era.endYear;
+    for (let year = startYear; year <= endYear; year++) years.add(year);
   }
   return [...years].filter(Number.isFinite).sort((a, b) => a - b);
 }
@@ -592,7 +600,9 @@ function rewriteEventsForContributor(
   if (!contributor || !contributorKey) return events;
   const years = new Set(Object.keys(contributor.commitsByYear).map(Number));
   return events.map((event) => {
-    const overlaps = [...years].some((year) => year >= event.startYear && year <= event.endYear);
+    const startYear = yearFromIso(event.startDate) ?? event.startYear;
+    const endYear = yearFromIso(event.endDate) ?? event.endYear;
+    const overlaps = [...years].some((year) => year >= startYear && year <= endYear);
     if (!overlaps) return event;
     return {
       ...event,
@@ -611,11 +621,13 @@ function linkLabel(link: EvidenceLink, copy: UiCopy['saga']): string {
 
 function findNearestSnapshotIndex(
   snapshots: NonNullable<Saga['stats']['timeTravelSnapshots']>,
-  year: number,
+  era: Era,
   fallback: number,
 ): number {
   if (snapshots.length === 0) return 0;
-  const target = Date.UTC(year, 6, 1);
+  const target = era.startDate
+    ? new Date(`${era.startDate}T00:00:00Z`).getTime()
+    : Date.UTC(era.startYear, 6, 1);
   let best = Math.min(fallback, snapshots.length - 1);
   let bestDistance = Number.POSITIVE_INFINITY;
   for (let i = 0; i < snapshots.length; i++) {
@@ -627,6 +639,51 @@ function findNearestSnapshotIndex(
     }
   }
   return best;
+}
+
+function overlapsEra(event: DetectedEvent, era: Era): boolean {
+  if (era.startDate && era.endDate) {
+    const eventStart = new Date(event.startDate).getTime();
+    const eventEnd = new Date(event.endDate).getTime();
+    const eraStart = new Date(`${era.startDate}T00:00:00Z`).getTime();
+    const eraEnd = new Date(`${era.endDate}T23:59:59Z`).getTime();
+    if (Number.isFinite(eventStart) && Number.isFinite(eventEnd)) {
+      return eventEnd >= eraStart && eventStart <= eraEnd;
+    }
+  }
+  return event.endYear >= era.startYear && event.startYear <= era.endYear;
+}
+
+function eraContainsDate(era: Era, isoDate: string): boolean {
+  if (era.startDate && era.endDate) {
+    const target = new Date(`${isoDate}T00:00:00Z`).getTime();
+    const start = new Date(`${era.startDate}T00:00:00Z`).getTime();
+    const end = new Date(`${era.endDate}T23:59:59Z`).getTime();
+    if (Number.isFinite(target) && Number.isFinite(start) && Number.isFinite(end)) {
+      return target >= start && target <= end;
+    }
+  }
+  const year = Number(isoDate.slice(0, 4));
+  return year >= era.startYear && year <= era.endYear;
+}
+
+function displayEraPeriod(era: Era): string {
+  const start = era.displayStartLabel ?? String(era.startYear);
+  const end = era.displayEndLabel ?? String(era.endYear);
+  return start === end ? start : `${start}–${end}`;
+}
+
+function displayEventPeriod(event: DetectedEvent): string {
+  const start = event.displayStartLabel ?? String(event.startYear);
+  const end = event.displayEndLabel ?? String(event.endYear);
+  return start === end ? start : `${start}–${end}`;
+}
+
+function yearFromIso(value?: string): number | undefined {
+  if (!value) return undefined;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  return parsed.getUTCFullYear();
 }
 
 // type-only re-export to ensure Era is referenced
