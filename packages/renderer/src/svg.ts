@@ -440,8 +440,8 @@ function renderTimelineStrip(
 
   if (scale.mode === 'date') {
     const ticks = uniqueTickLabels([
-      { label: saga.repo.firstPeriodLabel ?? eraBoundaryLabel(eras[0], 'displayStartLabel'), x: x0 },
-      { label: saga.repo.lastPeriodLabel ?? eraBoundaryLabel(eras[eras.length - 1], 'displayEndLabel'), x: x1 },
+      { label: saga.repo.firstPeriodLabel ?? eras[0]?.displayStartLabel, x: x0 },
+      { label: saga.repo.lastPeriodLabel ?? eras[eras.length - 1]?.displayEndLabel, x: x1 },
     ]);
     for (const tick of ticks) {
       out.push(
@@ -718,21 +718,15 @@ function displayRepoPeriod(saga: Saga): string {
 }
 
 function displayEraPeriod(era: Era): string {
-  const start = eraBoundaryLabel(era, 'displayStartLabel') ?? `${era.startYear}`;
-  const end = eraBoundaryLabel(era, 'displayEndLabel') ?? `${era.endYear}`;
+  const start = era.displayStartLabel ?? String(era.startYear);
+  const end = era.displayEndLabel ?? String(era.endYear);
   return start === end ? start : `${start}–${end}`;
 }
 
-function displayEventPeriod(
-  event: DetectedEvent & Partial<Record<'displayStartLabel' | 'displayEndLabel', string>>,
-): string {
-  const start = event.displayStartLabel ?? `${event.startYear}`;
-  const end = event.displayEndLabel ?? `${event.endYear}`;
+function displayEventPeriod(event: DetectedEvent): string {
+  const start = event.displayStartLabel ?? String(event.startYear);
+  const end = event.displayEndLabel ?? String(event.endYear);
   return start === end ? start : `${start}–${end}`;
-}
-
-function eraBoundaryLabel(era: Era, key: 'displayStartLabel' | 'displayEndLabel'): string | undefined {
-  return (era as Era & Partial<Record<'displayStartLabel' | 'displayEndLabel', string>>)[key];
 }
 
 function yearOf(iso: string): number {

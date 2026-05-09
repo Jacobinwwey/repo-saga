@@ -5,7 +5,7 @@
  */
 
 export interface RepoSource {
-  /** human-friendly project name (last path segment) */
+  /** human-friendly project name, preferring the git remote basename when available */
   name: string;
   /** original URL or local path the user supplied */
   source: string;
@@ -25,6 +25,12 @@ export interface RepoSource {
   defaultBranch?: string;
   /** total tags found */
   tagCount: number;
+  /** optional display label for the first rendered timeline period */
+  firstPeriodLabel?: string;
+  /** optional display label for the last rendered timeline period */
+  lastPeriodLabel?: string;
+  /** timeline slicing mode used to build eras */
+  timelineGranularity?: TimelineGranularity;
 }
 
 export interface RawCommit {
@@ -174,6 +180,10 @@ export interface DetectedEvent {
   endDate: string;
   startYear: number;
   endYear: number;
+  /** optional display label used instead of startYear for rendered ranges */
+  displayStartLabel?: string;
+  /** optional display label used instead of endYear for rendered ranges */
+  displayEndLabel?: string;
   severity: EventSeverity;
   /** 0..1 — heuristic confidence */
   confidence: number;
@@ -216,6 +226,14 @@ export interface Era {
   name: string;
   startYear: number;
   endYear: number;
+  /** optional real start date for this era when using non-year timeline slicing */
+  startDate?: string;
+  /** optional real end date for this era when using non-year timeline slicing */
+  endDate?: string;
+  /** optional display label used instead of startYear for rendered ranges */
+  displayStartLabel?: string;
+  /** optional display label used instead of endYear for rendered ranges */
+  displayEndLabel?: string;
   theme: string;
   summary: string;
   /** Raw numbers used to (re)compose era.summary in any language. */
@@ -322,4 +340,10 @@ export interface AnalyzeOptions {
   force?: boolean;
   /** accept a custom git binary (defaults to PATH 'git') */
   gitBin?: string;
+  /** timeline slicing mode used when carving eras (default year) */
+  timelineGranularity?: TimelineGranularity;
+  /** custom bucket size in days when timelineGranularity = 'days' */
+  bucketDays?: number;
 }
+
+export type TimelineGranularity = 'year' | 'quarter' | 'month' | 'days';

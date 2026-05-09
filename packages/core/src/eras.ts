@@ -1,5 +1,5 @@
 import { yearOf } from './analyzer.js';
-import type { AnalyzedRepo, DetectedEvent, Era, EventType } from './types.js';
+import type { AnalyzedRepo, DetectedEvent, Era, EventType, RawCommit, TimelineGranularity } from './types.js';
 
 const EVENT_TO_ERA: Record<EventType, { prefix: string; theme: string }> = {
   'initial-chaos': {
@@ -60,10 +60,14 @@ const EVENT_TO_ERA: Record<EventType, { prefix: string; theme: string }> = {
   },
 };
 
+const MAX_TEMPORAL_ERAS = 120;
+
 export interface EraOptions {
   /** desired era count clamp (default 3..7) */
   minEras?: number;
   maxEras?: number;
+  timelineGranularity?: TimelineGranularity;
+  bucketDays?: number;
 }
 
 export function groupIntoEras(
@@ -71,6 +75,10 @@ export function groupIntoEras(
   events: DetectedEvent[],
   opts: EraOptions = {},
 ): Era[] {
+  const timelineGranularity = opts.timelineGranularity ?? 'year';
+  if (timelineGranularity !== 'year') {
+    return groupIntoTemporalEras(repo, events, timelineGranularity, opts.bucketDays);
+  }
   const minEras = opts.minEras ?? 3;
   const maxEras = opts.maxEras ?? 7;
   if (repo.commits.length === 0) return [];
@@ -103,6 +111,329 @@ export function groupIntoEras(
     eras[eras.length - 1].endYear = lastYear;
   }
   return eras;
+}
+
+interface TimelineBucket {
+  key: string;
+  label: string;
+  startDate: string;
+  endDate: string;
+  commits: RawCommit[];
+  contributors: number;
+  insertions: number;
+  deletions: number;
+}
+
+function groupIntoTemporalEras(
+  repo: AnalyzedRepo,
+  events: DetectedEvent[],
+  granularity: TimelineGranularity,
+  bucketDays?: number,
+): Era[] {
+  const buckets = buildTimelineBucketsForRepo(repo, granularity, bucketDays);
+  if (buckets.length === 0) return [];
+
+  const syntheticBaseYear = 2001;
+  const mappedEvents = mapEventsToTimeline(repo, events, granularity, bucketDays);
+
+  const claimedLeads = new Set<string>();
+  return buckets.map((bucket, index) => {
+    const syntheticYear = syntheticBaseYear + index;
+    const inEra = mappedEvents.filter((event) => overlaps(event, syntheticYear, syntheticYear));
+    const dominant = [...inEra].sort((a, b) => b.score - a.score);
+    const lead = dominant.find(
+      (event) => !claimedLeads.has(event.id) && isLocalToEra(event, syntheticYear, syntheticYear),
+    );
+    if (lead) claimedLeads.add(lead.id);
+    const profile = lead ? EVENT_TO_ERA[lead.type] : undefined;
+    const fallbackName = temporalFallbackEraName(index);
+    const name = profile && lead ? `${profile.prefix}: ${lead.title}` : fallbackName;
+    const theme = profile?.theme ?? `the chronicle narrows to ${bucket.label}`;
+
+    return {
+      id: `era-${index + 1}`,
+      name,
+      startYear: syntheticYear,
+      endYear: syntheticYear,
+      startDate: bucket.startDate,
+      endDate: bucket.endDate,
+      displayStartLabel: bucket.label,
+      displayEndLabel: bucket.label,
+      theme,
+      summary: composeTemporalSummary(bucket, dominant),
+      summaryStats: {
+        commits: bucket.commits.length,
+        contributors: bucket.contributors,
+        insertions: bucket.insertions,
+        deletions: bucket.deletions,
+      },
+      dominantEvents: dominant.slice(0, 4).map((event) => event.id),
+      leadEventId: lead?.id,
+      evidence: composeTemporalEvidence(bucket, dominant),
+    };
+  });
+}
+
+export function mapEventsToTimeline(
+  repo: AnalyzedRepo,
+  events: DetectedEvent[],
+  granularity: TimelineGranularity,
+  bucketDays?: number,
+): DetectedEvent[] {
+  if (granularity === 'year') return events;
+  const buckets = buildTimelineBucketsForRepo(repo, granularity, bucketDays);
+  if (buckets.length === 0) return events;
+
+  const syntheticBaseYear = 2001;
+  return events.map((event) => {
+    const startIndex = findBucketIndexForBoundary(event.startDate, buckets, 'start');
+    const endIndex = findBucketIndexForBoundary(event.endDate, buckets, 'end');
+    const clampedEndIndex = Math.max(startIndex, endIndex);
+    const startYear = syntheticBaseYear + startIndex;
+    const endYear = syntheticBaseYear + clampedEndIndex;
+    return {
+      ...event,
+      startYear,
+      endYear,
+      displayStartLabel: buckets[startIndex]?.label ?? event.displayStartLabel ?? event.startDate,
+      displayEndLabel: buckets[clampedEndIndex]?.label ?? event.displayEndLabel ?? event.endDate,
+    };
+  });
+}
+
+function temporalFallbackEraName(positionalIdx: number): string {
+  switch (positionalIdx) {
+    case 0:
+      return 'Founding Era: A Chronicle Begins';
+    case 1:
+      return 'Settler Era: Habits Take Root';
+    case 2:
+      return 'Middle Kingdom: A Slow Drift';
+    case 3:
+      return 'Reformation: Quiet Changes';
+    case 4:
+      return 'Late Era: Maturity Sets In';
+    case 5:
+      return 'Twilight Era: Steady Hands';
+    default:
+      return 'Modern Era: The Present Day';
+  }
+}
+
+function buildTimelineBucketsForRepo(
+  repo: AnalyzedRepo,
+  granularity: TimelineGranularity,
+  bucketDays?: number,
+): TimelineBucket[] {
+  const daysAnchorDate = granularity === 'days' ? firstCommitDay(repo.commits) : undefined;
+  return coalesceTimelineBuckets(
+    buildTimelineBuckets(repo.commits, granularity, bucketDays, daysAnchorDate),
+    MAX_TEMPORAL_ERAS,
+  );
+}
+
+function buildTimelineBuckets(
+  commits: RawCommit[],
+  granularity: TimelineGranularity,
+  bucketDays?: number,
+  daysAnchorDate?: string,
+): TimelineBucket[] {
+  const groups = new Map<string, TimelineBucket>();
+  const normalizedDays = Math.max(1, bucketDays ?? 30);
+  for (const commit of commits) {
+    const info = timelineInfoForDate(commit.date, granularity, normalizedDays, daysAnchorDate);
+    const existing = groups.get(info.key) ?? {
+      key: info.key,
+      label: info.label,
+      startDate: info.startDate,
+      endDate: info.endDate,
+      commits: [],
+      contributors: 0,
+      insertions: 0,
+      deletions: 0,
+    };
+    existing.commits.push(commit);
+    existing.insertions += commit.insertions;
+    existing.deletions += commit.deletions;
+    groups.set(info.key, existing);
+  }
+
+  return [...groups.values()]
+    .sort((left, right) => left.startDate.localeCompare(right.startDate))
+    .map((bucket) => ({
+      ...bucket,
+      contributors: countBucketContributors(bucket.commits),
+    }));
+}
+
+function coalesceTimelineBuckets(buckets: TimelineBucket[], maxBuckets: number): TimelineBucket[] {
+  if (buckets.length <= maxBuckets) return buckets;
+
+  const groupSize = Math.ceil(buckets.length / maxBuckets);
+  const output: TimelineBucket[] = [];
+  for (let i = 0; i < buckets.length; i += groupSize) {
+    const group = buckets.slice(i, i + groupSize);
+    const first = group[0];
+    const last = group[group.length - 1];
+    const commits = group.flatMap((bucket) => bucket.commits);
+    output.push({
+      key: first.key === last.key ? first.key : `${first.key}..${last.key}`,
+      label: first.label === last.label ? first.label : `${first.label}–${last.label}`,
+      startDate: first.startDate,
+      endDate: last.endDate,
+      commits,
+      contributors: countBucketContributors(commits),
+      insertions: group.reduce((sum, bucket) => sum + bucket.insertions, 0),
+      deletions: group.reduce((sum, bucket) => sum + bucket.deletions, 0),
+    });
+  }
+  return output;
+}
+
+function countBucketContributors(commits: RawCommit[]): number {
+  return new Set(
+    commits
+      .map((commit) => (commit.authorEmail || commit.authorName || 'unknown').toLowerCase())
+      .filter(Boolean),
+  ).size;
+}
+
+function composeTemporalSummary(bucket: TimelineBucket, events: DetectedEvent[]): string {
+  const eventBit =
+    events.length > 0
+      ? `Defining moments: ${events.slice(0, 3).map((event) => event.title).join(', ')}.`
+      : 'No defining heuristic events landed in this stretch — the chronicle ran quiet.';
+  return `${bucket.label}: ${bucket.commits.length.toLocaleString()} commits, ${bucket.contributors} contributors, +${bucket.insertions.toLocaleString()} / -${bucket.deletions.toLocaleString()} lines. ${eventBit}`;
+}
+
+function composeTemporalEvidence(bucket: TimelineBucket, events: DetectedEvent[]): string[] {
+  const evidence = [
+    `Period ${bucket.label} ran from ${bucket.startDate} to ${bucket.endDate}`,
+    `${bucket.commits.length.toLocaleString()} commits, ${bucket.contributors} contributors, +${bucket.insertions.toLocaleString()} / -${bucket.deletions.toLocaleString()} lines`,
+  ];
+  if (bucket.commits[0]) evidence.push(`Opened with ${bucket.commits[0].subject}`);
+  if (bucket.commits[bucket.commits.length - 1]) {
+    evidence.push(`Closed with ${bucket.commits[bucket.commits.length - 1].subject}`);
+  }
+  for (const event of events.slice(0, 2)) {
+    evidence.push(`${event.title} (${event.displayStartLabel ?? event.startYear}${event.displayEndLabel && event.displayEndLabel !== event.displayStartLabel ? `–${event.displayEndLabel}` : ''}) — ${event.evidence[0] ?? event.narrative}`);
+  }
+  return evidence;
+}
+
+function timelineInfoForDate(
+  isoDate: string,
+  granularity: TimelineGranularity,
+  bucketDays: number,
+  daysAnchorDate?: string,
+): { key: string; label: string; startDate: string; endDate: string } {
+  const parsed = new Date(isoDate);
+  if (Number.isNaN(parsed.getTime())) {
+    return {
+      key: isoDate,
+      label: isoDate,
+      startDate: isoDate,
+      endDate: isoDate,
+    };
+  }
+  const year = parsed.getUTCFullYear();
+  const month = parsed.getUTCMonth();
+  const day = parsed.getUTCDate();
+
+  if (granularity === 'quarter') {
+    const quarter = Math.floor(month / 3) + 1;
+    const start = new Date(Date.UTC(year, (quarter - 1) * 3, 1));
+    const end = new Date(Date.UTC(year, quarter * 3, 0));
+    return {
+      key: `${year}-Q${quarter}`,
+      label: `${year} Q${quarter}`,
+      startDate: isoShort(start),
+      endDate: isoShort(end),
+    };
+  }
+
+  if (granularity === 'month') {
+    const nextMonth = new Date(Date.UTC(year, month + 1, 0));
+    return {
+      key: `${year}-${String(month + 1).padStart(2, '0')}`,
+      label: `${year}-${String(month + 1).padStart(2, '0')}`,
+      startDate: `${year}-${String(month + 1).padStart(2, '0')}-01`,
+      endDate: isoShort(nextMonth),
+    };
+  }
+
+  if (granularity === 'days') {
+    const epochDay = Math.floor(Date.UTC(year, month, day) / 86_400_000);
+    const anchorDay = daysAnchorDate
+      ? Math.floor(Date.parse(`${daysAnchorDate}T00:00:00Z`) / 86_400_000)
+      : epochDay;
+    const bucketIndex = Math.floor((epochDay - anchorDay) / bucketDays);
+    const startDay = anchorDay + bucketIndex * bucketDays;
+    const endDay = startDay + bucketDays - 1;
+    const start = new Date(startDay * 86_400_000);
+    const end = new Date(endDay * 86_400_000);
+    return {
+      key: `days-${bucketDays}-${bucketIndex}`,
+      label: `${isoShort(start)} +${bucketDays}d`,
+      startDate: isoShort(start),
+      endDate: isoShort(end),
+    };
+  }
+
+  const start = new Date(Date.UTC(year, 0, 1));
+  const end = new Date(Date.UTC(year, 11, 31));
+  return {
+    key: String(year),
+    label: String(year),
+    startDate: isoShort(start),
+    endDate: isoShort(end),
+  };
+}
+
+function isoShort(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+function firstCommitDay(commits: RawCommit[]): string | undefined {
+  let earliest: string | undefined;
+  let earliestMs = Number.POSITIVE_INFINITY;
+  for (const commit of commits) {
+    const ms = Date.parse(commit.date);
+    if (Number.isNaN(ms) || ms >= earliestMs) continue;
+    earliestMs = ms;
+    earliest = commit.date;
+  }
+  return earliest?.slice(0, 10);
+}
+
+function findBucketIndexForBoundary(
+  date: string,
+  buckets: TimelineBucket[],
+  boundary: 'start' | 'end',
+): number {
+  if (buckets.length === 0) return 0;
+  const parsed = normalizeBoundaryDateMs(date, boundary);
+  if (!Number.isFinite(parsed)) return boundary === 'start' ? 0 : buckets.length - 1;
+
+  if (boundary === 'start') {
+    for (let index = 0; index < buckets.length; index++) {
+      if (parsed <= normalizeBoundaryDateMs(buckets[index].endDate, 'end')) return index;
+    }
+    return buckets.length - 1;
+  }
+
+  for (let index = buckets.length - 1; index >= 0; index--) {
+    if (parsed >= normalizeBoundaryDateMs(buckets[index].startDate, 'start')) return index;
+  }
+  return 0;
+}
+
+function normalizeBoundaryDateMs(date: string, boundary: 'start' | 'end'): number {
+  const normalized = /^\d{4}-\d{2}-\d{2}/.test(date)
+    ? date.slice(0, 10)
+    : `${date.slice(0, 4)}-${boundary === 'start' ? '01-01' : '12-31'}`;
+  const suffix = boundary === 'start' ? 'T00:00:00Z' : 'T23:59:59Z';
+  return Date.parse(`${normalized}${suffix}`);
 }
 
 function overlaps(event: DetectedEvent, startYear: number, endYear: number): boolean {
@@ -204,6 +535,8 @@ function buildEra(
     name,
     startYear,
     endYear,
+    startDate: `${startYear}-01-01`,
+    endDate: `${endYear}-12-31`,
     theme,
     summary,
     summaryStats,

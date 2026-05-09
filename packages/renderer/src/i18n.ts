@@ -573,8 +573,8 @@ export function composeEraSummary(era: Era, events: DetectedEvent[], lang: Lang)
   const stats = era.summaryStats;
   if (!stats) return era.summary;
   const locale = resolveLang(lang);
-  const startLabel = readEraDisplayLabel(era, 'displayStartLabel') ?? `${era.startYear}`;
-  const endLabel = readEraDisplayLabel(era, 'displayEndLabel') ?? `${era.endYear}`;
+  const startLabel = era.displayStartLabel ?? `${era.startYear}`;
+  const endLabel = era.displayEndLabel ?? `${era.endYear}`;
   const period = startLabel === endLabel ? startLabel : `${startLabel}–${endLabel}`;
   const dominant = era.dominantEvents
     .map((id) => events.find((e) => e.id === id))
@@ -822,10 +822,6 @@ function genericEvidence(
 
 function manualLocale(locale: SupportedLang) {
   return MANUAL_LOCALE_LOOKUP[locale];
-}
-
-function readEraDisplayLabel(era: Era, key: 'displayStartLabel' | 'displayEndLabel'): string | undefined {
-  return (era as Era & Partial<Record<'displayStartLabel' | 'displayEndLabel', string>>)[key];
 }
 
 function interpolateTemplate(template: string, vars: Record<string, string | number>): string {

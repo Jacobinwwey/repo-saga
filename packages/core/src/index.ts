@@ -3,6 +3,7 @@ import {
   defaultCacheDir,
   deriveRepoName,
   isRemoteUrl,
+  readPreferredRepoName,
   readBranches,
   readDefaultBranch,
   readGitLog,
@@ -10,7 +11,7 @@ import {
   resolveSource,
 } from './git.js';
 import { ALL_DETECTORS, runDetectors } from './detectors.js';
-import { groupIntoEras } from './eras.js';
+import { groupIntoEras, mapEventsToTimeline } from './eras.js';
 import type {
   AnalyzeOptions,
   AnalyzedRepo,
@@ -60,7 +61,7 @@ export async function generateSaga(input: string, opts: AnalyzeOptions = {}): Pr
   const defaultBranch = await readDefaultBranch(resolved.resolvedPath, opts.gitBin);
 
   emit(onProgress, { phase: 'analysing', message: 'Aggregating yearly stats…', progress: 0.55 });
-  const repoName = deriveRepoName(input);
+  const repoName = await readPreferredRepoName(resolved.resolvedPath, input, opts.gitBin);
   const analyzed = buildAnalyzedRepo({
     repoName,
     source: input,
@@ -78,16 +79,31 @@ export async function generateSaga(input: string, opts: AnalyzeOptions = {}): Pr
   const { events, ran } = runDetectors(analyzed);
 
   emit(onProgress, { phase: 'eras', message: 'Carving the timeline into eras…', progress: 0.85 });
-  const eras = groupIntoEras(analyzed, events);
+  const eras = groupIntoEras(analyzed, events, {
+    timelineGranularity: opts.timelineGranularity,
+    bucketDays: opts.bucketDays,
+  });
 
   emit(onProgress, { phase: 'rendering', message: 'Compiling saga…', progress: 0.95 });
   const stats = buildSagaStats(analyzed, events);
+  const timelineGranularity = opts.timelineGranularity ?? 'year';
+  const renderedEvents = mapEventsToTimeline(
+    analyzed,
+    events,
+    timelineGranularity,
+    opts.bucketDays,
+  );
 
   const saga: Saga = {
     schemaVersion: 1,
-    repo: analyzed.repo,
+    repo: {
+      ...analyzed.repo,
+      firstPeriodLabel: eras[0]?.displayStartLabel,
+      lastPeriodLabel: eras[eras.length - 1]?.displayEndLabel,
+      timelineGranularity,
+    },
     eras,
-    events,
+    events: renderedEvents,
     stats,
     meta: {
       generator: SAGA_GENERATOR_NAME,
@@ -529,6 +545,7 @@ export {
   deriveRepoName,
   groupIntoEras,
   isRemoteUrl,
+  readPreferredRepoName,
   readBranches,
   readDefaultBranch,
   readGitLog,

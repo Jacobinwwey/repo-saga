@@ -57,6 +57,25 @@ export function deriveRepoName(input: string): string {
   return last && last.length > 0 ? last : 'repo';
 }
 
+export async function readPreferredRepoName(
+  repoPath: string,
+  input: string,
+  gitBin: string = 'git',
+): Promise<string> {
+  if (isRemoteUrl(input)) return deriveRepoName(input);
+
+  const originUrl = await readRemoteUrl(repoPath, 'origin', gitBin);
+  if (originUrl) return deriveRepoName(originUrl);
+
+  const remotes = await readRemoteNames(repoPath, gitBin);
+  for (const remote of remotes) {
+    const remoteUrl = await readRemoteUrl(repoPath, remote, gitBin);
+    if (remoteUrl) return deriveRepoName(remoteUrl);
+  }
+
+  return deriveRepoName(input);
+}
+
 export function defaultCacheDir(): string {
   return path.join(os.tmpdir(), 'repo-saga-cache');
 }
@@ -320,6 +339,35 @@ async function pathIsDir(p: string): Promise<boolean> {
     return s.isDirectory();
   } catch {
     return false;
+  }
+}
+
+async function readRemoteNames(
+  repoPath: string,
+  gitBin: string,
+): Promise<string[]> {
+  try {
+    const { stdout } = await execa(gitBin, ['-C', repoPath, 'remote']);
+    return stdout
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function readRemoteUrl(
+  repoPath: string,
+  remoteName: string,
+  gitBin: string,
+): Promise<string | undefined> {
+  try {
+    const { stdout } = await execa(gitBin, ['-C', repoPath, 'remote', 'get-url', remoteName]);
+    const remoteUrl = stdout.trim();
+    return remoteUrl.length > 0 ? remoteUrl : undefined;
+  } catch {
+    return undefined;
   }
 }
 
